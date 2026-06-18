@@ -2,58 +2,59 @@
 {% block title %}Équipes - Goma Efootball{% endblock %}
 {% block content %}
 <div class="max-w-4xl mx-auto">
-  <div class="flex items-center justify-between mb-8">
-    <h1 class="text-3xl font-black">Équipes Validées</h1>
-    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">{{ teams|length }} / 32</span>
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl md:text-4xl font-black">Équipes Validées</h1>
+    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-bold">
+      {{ teams|length }} / 32
+    </span>
   </div>
 
-  <div class="bg-[#0f172a] border border-white/10 rounded-3xl overflow-hidden">
-    <!-- Header desktop -->
-    <div class="hidden md:grid grid-cols-12 px-6 py-4 bg-white/5 text-xs uppercase tracking-wider text-white/50 font-bold">
-      <div class="col-span-5">Équipe</div>
-      <div class="col-span-4">Joueur</div>
-      <div class="col-span-3 text-right">Contact</div>
+  <!-- Tableau propre -->
+  <div class="bg-[#1e293b] border border-white/10 rounded-3xl overflow-hidden">
+    <!-- Entête -->
+    <div class="grid grid-cols-12 px-6 py-3 text-xs font-bold text-white/50 uppercase tracking-wider border-b border-white/10 bg-white/5">
+      <div class="col-span-5">ÉQUIPE</div>
+      <div class="col-span-5">JOUEUR</div>
+      <div class="col-span-2 text-right">CONTACT</div>
     </div>
 
+    <!-- Boucle CORRIGÉE - une ligne par équipe -->
     {% for team in teams %}
-    <div class="grid grid-cols-12 px-6 py-4 border-t border-white/5 hover:bg-white/5 transition items-center">
-      <div class="col-span-9 md:col-span-5 flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center font-black text-black text-sm shrink-0">
-          {{ team.abbreviation }}
+    <div class="grid grid-cols-12 px-6 py-4 items-center border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition">
+      <!-- Colonne Équipe -->
+      <div class="col-span-5 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-black text-xs shrink-0">
+          {{ team.code|default:"RDC" }}
         </div>
-        <div class="min-w-0">
-          <a href="{% url 'team_detail' team.pk %}" class="font-semibold hover:text-amber-400 transition truncate block">
-            {{ team.name }}
-          </a>
-          <div class="text-xs text-white/40 md:hidden">@{{ team.owner.username }}</div>
-        </div>
+        <span class="font-semibold truncate">{{ team.name }}</span>
       </div>
       
-      <div class="hidden md:flex col-span-4 items-center">
-        <span class="text-white/80">@{{ team.owner.username }}</span>
+      <!-- Colonne Joueur -->
+      <div class="col-span-5 text-white/70 truncate">
+        @{{ team.pseudo }}
       </div>
       
-      <div class="col-span-3 flex items-center justify-end">
+      <!-- Colonne Contact -->
+      <div class="col-span-2 flex justify-end">
         {% if team.whatsapp %}
         <a href="https://wa.me/{{ team.whatsapp|cut:'+'|cut:' ' }}" target="_blank" 
-           class="w-9 h-9 rounded-full bg-[#25D366] hover:bg-[#20ba5a] flex items-center justify-center transition transform hover:scale-110" 
-           title="WhatsApp {{ team.name }}">
-          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+           class="w-9 h-9 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition hover:scale-110">
+          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.5 14c-.3-.1-1.7-.8-2-.9s-.5-.1-.7.1-.8.9-1 1.1-.4.2-.7.1a8 8 0 0 1-2.4-1.5 9 9 0 0 1-1.7-2c-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.2-.5s0-.4-.1-.5L8.5 6c-.2-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.3 1 2.7 1.2 2.9a11 11 0 0 0 4.4 3.9c.6.3 1.1.5 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.6-.6 1.8-1.3.2-.6.2-1.2.1-1.3 0-.1-.2-.2-.5-.3z"/>
           </svg>
         </a>
-        {% else %}
-        <span class="text-white/30 text-xs">—</span>
         {% endif %}
       </div>
     {% empty %}
-    <div class="px-6 py-12 text-center text-white/50">
-      Aucune équipe validée pour l’instant.<br>
-      <a href="/inscription/" class="text-amber-400 hover:underline mt-2 inline-block">Sois le premier à t'inscrire</a>
+    <div class="p-12 text-center text-white/40">
+      Aucune équipe validée pour le moment
     </div>
     {% endfor %}
   </div>
 
-  <p class="text-center text-xs text-white/40 mt-6">Clique sur le nom pour voir la fiche • Clique sur l’icône verte pour WhatsApp</p>
+  <p class="text-center text-xs text-white/40 mt-4">
+    Clique sur le nom pour voir la fiche • Clique sur l'icône verte pour WhatsApp
+  </p>
 </div>
 {% endblock %}
