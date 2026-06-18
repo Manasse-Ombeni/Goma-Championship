@@ -1,0 +1,108 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-5xl mx-auto">
+  <h1 class="text-3xl font-black mb-4">Calendrier des matchs</h1>
+
+  <div class="flex gap-2 mb-6">
+    <button onclick="filterMatches('all')" id="btn-all" class="px-4 py-2 bg-white/10 rounded-xl text-sm transition">Tous</button>
+    <button onclick="filterMatches('mine')" id="btn-mine" class="px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm transition">Mes matchs {% if user_team %}({{ user_team.abbreviation }}){% endif %}</button>
+  </div>
+
+  <div class="space-y-4" id="matches-list">
+    {% for m in matches %}
+    <div class="bg-[#0f172a] border rounded-2xl p-5 hover:border-amber-400/30 transition {% if m.is_mine %}border-amber-500/60 ring-1 ring-amber-500/20 bg-amber-500/[0.03]{% else %}border-white/10{% endif %}" data-mine="{% if m.is_mine %}1{% else %}0{% endif %}">
+
+      {% if m.is_mine and not m.played %}
+      <div class="flex items-center justify-between mb-3 pb-3 border-b border-amber-500/20">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Ton match</span>
+        <span class="text-xs px-2.5 py-1 rounded-full font-medium {% if m.is_late %}bg-red-500/20 text-red-400{% elif m.hours_left < 6 %}bg-orange-500/20 text-orange-400{% else %}bg-white/10 text-white/70{% endif %}">
+          {% if m.is_late %}EN RETARD{% else %}{{ m.hours_left }}h restantes{% endif %}
+        </span>
+      </div>
+      {% endif %}
+
+      <div class="flex items-center justify-between">
+
+        <!-- Équipe Domicile -->
+        <div class="flex-1 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center font-black text-white text-sm">
+            {{ m.home.abbreviation }}
+          </div>
+          <div>
+            <div class="font-bold text-lg">{{ m.home.name }}</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-xs text-white/50">@{{ m.home.owner_username }}</span>
+              {% if m.home.whatsapp %}
+              <a href="https://wa.me/{{ m.home.whatsapp|cut:'+'|cut:' ' }}" target="_blank"
+                 class="w-6 h-6 rounded-full bg-[#25D366] flex items-center justify-center hover:scale-110 transition"
+                 title="WhatsApp {{ m.home.name }}">
+                <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                </svg>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- VS / Score -->
+        <div class="px-6 text-center">
+          {% if m.played %}
+            <div class="text-2xl font-black">
+              <span class="{% if m.home_goals > m.away_goals %}text-emerald-400{% endif %}">{{ m.home_goals }}</span>
+              <span class="text-white/30 mx-2">-</span>
+              <span class="{% if m.away_goals > m.home_goals %}text-emerald-400{% endif %}">{{ m.away_goals }}</span>
+            </div>
+            <div class="text-xs text-white/40 mt-1">Terminé</div>
+          {% else %}
+            <div class="text-xl font-bold text-white/30">VS</div>
+            <div class="text-xs text-amber-400 mt-1">À jouer</div>
+            {% if not m.is_mine %}
+            <div class="text-[10px] text-white/30 mt-1">{{ m.deadline|date:"d/m H:i" }}</div>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <!-- Équipe Extérieur -->
+        <div class="flex-1 flex items-center gap-3 justify-end text-right">
+          <div>
+            <div class="font-bold text-lg">{{ m.away.name }}</div>
+            <div class="flex items-center gap-2 mt-1 justify-end">
+              {% if m.away.whatsapp %}
+              <a href="https://wa.me/{{ m.away.whatsapp|cut:'+'|cut:' ' }}" target="_blank"
+                 class="w-6 h-6 rounded-full bg-[#25D366] flex items-center justify-center hover:scale-110 transition order-2"
+                 title="WhatsApp {{ m.away.name }}">
+                <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                </svg>
+              </a>
+              {% endif %}
+              <span class="text-xs text-white/50 order-1">@{{ m.away.owner_username }}</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-600 flex items-center justify-center font-black text-white text-sm">
+            {{ m.away.abbreviation }}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-16 text-white/50">Aucun match programmé.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+function filterMatches(type){
+  const cards = document.querySelectorAll('#matches-list > div');
+  cards.forEach(card => {
+    const isMine = card.dataset.mine === '1';
+    card.style.display = (type === 'all' || isMine)? '' : 'none';
+  });
+  document.getElementById('btn-all').className = type==='all'? 'px-4 py-2 bg-white/10 rounded-xl text-sm transition' : 'px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm transition';
+  document.getElementById('btn-mine').className = type==='mine'? 'px-4 py-2 bg-amber-500/20 text-amber-400 rounded-xl text-sm transition' : 'px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm transition';
+}
+// active par défaut
+filterMatches('all');
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-4xl mx-auto p-4">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center font-black text-black text-2xl">
+      {{ team.abbreviation }}
+    </div>
+    <div>
+      <h1 class="text-3xl font-black">{{ team.name }}</h1>
+      <p class="text-white/60">Joueur : <span class="text-amber-400">@{{ team.owner.username }}</span> • {{ team.city }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
+    <div class="bg-[#0f172a] border border-white/10 p-4 rounded-2xl text-center"><div class="text-2xl font-bold">{{ stats.played }}</div><div class="text-xs text-white/50">MJ</div></div>
+    <div class="bg-[#0f172a] border border-white/10 p-4 rounded-2xl text-center"><div class="text-2xl font-bold text-emerald-400">{{ stats.wins }}</div><div class="text-xs text-white/50">V</div></div>
+    <div class="bg-[#0f172a] border border-white/10 p-4 rounded-2xl text-center"><div class="text-2xl font-bold text-yellow-400">{{ stats.draws }}</div><div class="text-xs text-white/50">N</div></div>
+    <div class="bg-[#0f172a] border border-white/10 p-4 rounded-2xl text-center"><div class="text-2xl font-bold text-red-400">{{ stats.losses }}</div><div class="text-xs text-white/50">D</div></div>
+    <div class="bg-[#0f172a] border border-white/10 p-4 rounded-2xl text-center"><div class="text-2xl font-bold">{{ stats.gf }}</div><div class="text-xs text-white/50">BP</div></div>
+    <div class="bg-[#0f172a] border border-white/10 p-4 rounded-2xl text-center"><div class="text-2xl font-bold">{{ stats.gd }}</div><div class="text-xs text-white/50">DIFF</div></div>
+  </div>
+
+  <h2 class="text-xl font-bold mb-3">Palmarès</h2>
+  <div class="bg-[#0f172a] border border-white/10 p-5 rounded-2xl mb-8">
+    🏆 Titres : {{ palmares.titres }} • 🥈 Finales : {{ palmares.finales }} • 🎮 {{ team.name }} ({{ team.abbreviation }})
+  </div>
+
+  <h2 class="text-xl font-bold mb-3">Historique des matchs</h2>
+  <div class="space-y-2">
+    {% for m in matches %}
+    <div class="flex justify-between items-center bg-[#0f172a] border border-white/10 p-4 rounded-2xl">
+      <div class="font-medium">
+        <span class="{% if m.home == team %}text-amber-400{% endif %}">{{ m.home.name }}</span>
+        <span class="mx-2 font-bold">{{ m.home_goals }} - {{ m.away_goals }}</span>
+        <span class="{% if m.away == team %}text-amber-400{% endif %}">{{ m.away.name }}</span>
+      </div>
+      <span class="text-xs px-2 py-1 bg-white/10 rounded-full">{{ m.get_phase_display }}</span>
+    </div>
+    {% empty %}
+    <p class="text-white/50">Aucun match joué.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

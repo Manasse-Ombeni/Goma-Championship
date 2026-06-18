@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block content %}
+<h2 class="text-3xl font-black mb-6">Manager Dashboard</h2>
+<div class="grid lg:grid-cols-2 gap-6">
+ <div class="p-6 rounded-3xl bg-white/5 border border-white/10">
+  <h3 class="font-bold mb-3 text-amber-400">Équipes en attente (WhatsApp)</h3>
+  {% for t in pending %}
+  <div class="flex justify-between items-center py-2 border-b border-white/5">
+   <div>{{t.name}} ({{t.whatsapp}})</div>
+   <a href="/manager/valider/{{t.id}}/" class="px-3 py-1 bg-emerald-500 text-black rounded-lg text-sm">Valider</a>
+  </div>
+  {% empty %}<p class="text-white/50">Aucune</p>{% endfor %}
+ </div>
+ <div class="p-6 rounded-3xl bg-white/5 border border-white/10">
+  <h3 class="font-bold mb-3">Saisir résultats</h3>
+  {% for m in matches %}
+  <div class="flex justify-between py-2"><span>{{m.home.abbreviation}} vs {{m.away.abbreviation}}</span><a href="/manager/match/{{m.id}}/" class="text-amber-400">Entrer score</a></div>
+  {% endfor %}
+ </div>
+</div>
+{% endblock %}

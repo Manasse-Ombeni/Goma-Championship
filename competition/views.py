@@ -1,0 +1,274 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import logout
+from django.db.models import Q 
+import random
+
+from.models import Tournament, Team, Match, Group
+from.forms import TeamForm, MatchForm
+
+def get_tournament():
+    t, _ = Tournament.objects.get_or_create(pk=1, defaults={'name': 'Goma Efootball Championship'})
+    return t
+
+def is_manager(user):
+    return user.is_staff
+
+# PUBLIC
+def home(request):
+    t = get_tournament()
+    teams = Team.objects.filter(tournament=t, is_validated=True).count()
+    next_matches = Match.objects.filter(tournament=t, played=False)[:5]
+    results = Match.objects.filter(tournament=t, played=True).order_by('-id')[:5]
+    return render(request, 'competition/home.html', {'teams':teams,'next':next_matches,'results':results,'t':t})
+
+def teams(request):
+    t = get_tournament()
+    qs = Team.objects.filter(tournament=t, is_validated=True).order_by('-points','-goals_for')
+    return render(request, 'competition/teams.html', {'teams':qs})
+
+def team_register(request):
+    t = get_tournament()
+    if request.method == 'POST':
+        form = TeamForm(request.POST)
+        if form.is_valid():
+            team = form.save(commit=False)
+            team.tournament = t
+            from django.contrib.auth.models import User
+            username = form.cleaned_data['owner_username']
+            password = form.cleaned_data['owner_password']
+            user, created = User.objects.get_or_create(username=username)
+            if created or not user.has_usable_password():
+                user.set_password(password); user.save()
+            team.owner = user; team.save()
+            return redirect('home')
+    else:
+        form = TeamForm()
+    return render(request, 'competition/register.html', {'form':form})
+
+from django.utils import timezone
+from datetime import timedelta
+
+def schedule(request):  # <-- renomme ici
+    t = Tournament.objects.first()
+    now = timezone.now()
+    matches = Match.objects.filter(tournament=t).select_related('home','away').order_by('scheduled_at')
+
+    user_team = None
+    if request.user.is_authenticated:
+        user_team = Team.objects.filter(tournament=t, owner=request.user).first()
+
+    for m in matches:
+        m.deadline = (m.scheduled_at or now) + timedelta(hours=24)
+        m.hours_left = max(0, int((m.deadline - now).total_seconds() / 3600))
+        m.is_late = now > m.deadline and not m.played
+        m.is_mine = user_team and (m.home == user_team or m.away == user_team)
+
+    return render(request, 'competition/matches.html', {'matches': matches, 'user_team': user_team})  # <-- matches.html
+
+def standings(request):
+    t = get_tournament()
+    groups = Group.objects.filter(tournament=t).order_by('name')
+    data = {g.name: Team.objects.filter(group=g, is_validated=True).order_by('-points','-goals_for','goals_against') for g in groups}
+    return render(request, 'competition/standings.html', {'data':data})
+
+def bracket(request):
+    t = get_tournament()
+    return render(request, 'competition/bracket.html', {
+        'r16': Match.objects.filter(tournament=t, phase='R16').order_by('id'),
+        'qf': Match.objects.filter(tournament=t, phase='QF').order_by('id'),
+        'sf': Match.objects.filter(tournament=t, phase='SF').order_by('id'),
+        'third': Match.objects.filter(tournament=t, phase='3P').first(),
+        'final': Match.objects.filter(tournament=t, phase='F').first(),
+    })
+
+def logout_view(request):
+    logout(request); return redirect('home')
+
+# MANAGER
+@login_required
+@user_passes_test(is_manager)
+def manager_dashboard(request):
+    t = get_tournament()
+    return render(request, 'competition/manager/dashboard.html', {
+        'pending': Team.objects.filter(tournament=t, is_validated=False),
+        'validated': Team.objects.filter(tournament=t, is_validated=True).count(),
+        'matches': Match.objects.filter(tournament=t, played=False)[:20]
+    })
+
+@login_required
+@user_passes_test(is_manager)
+def validate_team(request, pk):
+    team = get_object_or_404(Team, pk=pk); team.is_validated = True; team.save()
+    return redirect('manager')
+
+@login_required
+@user_passes_test(is_manager)
+def match_update(request, pk):
+    match = get_object_or_404(Match, pk=pk)
+    if request.method == 'POST':
+        form = MatchForm(request.POST, instance=match)
+        if form.is_valid():
+            m = form.save(commit=False)
+            m.played = True
+            m.save()
+
+            # 1. Stats poules
+            if m.phase == 'group' and m.home and m.away and m.home_goals is not None:
+                m.home.goals_for += m.home_goals
+                m.home.goals_against += m.away_goals
+                m.away.goals_for += m.away_goals
+                m.away.goals_against += m.home_goals
+                if m.home_goals > m.away_goals: m.home.points += 3
+                elif m.home_goals < m.away_goals: m.away.points += 3
+                else: m.home.points += 1; m.away.points += 1
+                m.home.save(); m.away.save()
+
+            # 2. Avancement automatique phases finales
+            if m.phase in ['R16','QF','SF'] and m.home_goals != m.away_goals:
+                winner = m.home if m.home_goals > m.away_goals else m.away
+                loser = m.away if winner == m.home else m.home
+                t = m.tournament
+
+                # Récupère les matchs dans l'ordre
+                r16 = list(Match.objects.filter(tournament=t, phase='R16').order_by('id'))
+                qf = list(Match.objects.filter(tournament=t, phase='QF').order_by('id'))
+                sf = list(Match.objects.filter(tournament=t, phase='SF').order_by('id'))
+                final = Match.objects.filter(tournament=t, phase='F').first()
+                third = Match.objects.filter(tournament=t, phase='3P').first()
+
+                if m.phase == 'R16':
+                    idx = r16.index(m)
+                    target_qf = qf[idx // 2]  # 0-1 -> QF1, 2-3 -> QF2, etc.
+                    if idx % 2 == 0: target_qf.home = winner
+                    else: target_qf.away = winner
+                    target_qf.save()
+
+                elif m.phase == 'QF':
+                    idx = qf.index(m)
+                    target_sf = sf[idx // 2]
+                    if idx % 2 == 0: target_sf.home = winner
+                    else: target_sf.away = winner
+                    target_sf.save()
+
+                elif m.phase == 'SF':
+                    idx = sf.index(m)
+                    # Vainqueur en finale
+                    if idx == 0: final.home = winner; third.home = loser
+                    else: final.away = winner; third.away = loser
+                    final.save(); third.save()
+
+            return redirect('manager')
+    else:
+        form = MatchForm(instance=match)
+    return render(request, 'competition/match_form.html', {'form':form,'match':match})
+
+@login_required
+@user_passes_test(is_manager)
+def generate_draw(request):
+    t = get_tournament()
+    teams = list(Team.objects.filter(tournament=t, is_validated=True))
+    if len(teams)!= 32:
+        # On exige exactement 32 pour respecter le cahier
+        return redirect('manager')
+    random.shuffle(teams)
+    Group.objects.filter(tournament=t).delete()
+    Team.objects.filter(tournament=t).update(points=0, goals_for=0, goals_against=0, group=None)
+    groups = [Group.objects.create(tournament=t, name=n) for n in ['A','B','C','D','E','F','G','H']]
+    for i, team in enumerate(teams):
+        team.group = groups[i // 4] # 4 équipes par groupe
+        team.save()
+    return redirect('standings')
+
+@login_required
+@user_passes_test(is_manager)
+def generate_schedule(request):
+    t = get_tournament()
+    Match.objects.filter(tournament=t, phase='group').delete()
+    for g in Group.objects.filter(tournament=t):
+        teams = list(Team.objects.filter(group=g, is_validated=True))
+        for i in range(len(teams)):
+            for j in range(i+1, len(teams)):
+                Match.objects.create(tournament=t, phase='group', group=g, home=teams[i], away=teams[j])
+    return redirect('schedule')
+
+@login_required
+@user_passes_test(is_manager)
+def generate_knockout(request):
+    t = get_tournament()
+    Match.objects.filter(tournament=t, phase__in=['R16','QF','SF','3P','F']).delete()
+
+    groups = {}
+    for g in Group.objects.filter(tournament=t).order_by('name'):
+        top2 = list(Team.objects.filter(group=g, is_validated=True).order_by('-points','-goals_for')[:2])
+        if len(top2) == 2: groups[g.name] = top2
+
+    if len(groups)!= 8: return redirect('manager')
+
+    # Huitièmes officiels
+    r16 = [
+        (groups['A'][0], groups['B'][1]), (groups['C'][0], groups['D'][1]),
+        (groups['E'][0], groups['F'][1]), (groups['G'][0], groups['H'][1]),
+        (groups['B'][0], groups['A'][1]), (groups['D'][0], groups['C'][1]),
+        (groups['F'][0], groups['E'][1]), (groups['H'][0], groups['G'][1]),
+    ]
+    for h,a in r16: Match.objects.create(tournament=t, phase='R16', home=h, away=a)
+
+    # Placeholders
+    for _ in range(4): Match.objects.create(tournament=t, phase='QF', home=None, away=None)
+    for _ in range(2): Match.objects.create(tournament=t, phase='SF', home=None, away=None)
+    Match.objects.create(tournament=t, phase='3P', home=None, away=None)
+    Match.objects.create(tournament=t, phase='F', home=None, away=None)
+
+    return redirect('bracket')
+
+
+def team_detail(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    t = team.tournament
+    
+    # Historique
+    matches = Match.objects.filter(
+        Q(home=team) | Q(away=team), 
+        tournament=t, 
+        played=True
+    ).select_related('home','away').order_by('-id')
+    
+    # Stats
+    played = matches.count()
+    wins = draws = losses = 0
+    gf = ga = 0
+    
+    for m in matches:
+        is_home = m.home == team
+        goals_for = m.home_goals if is_home else m.away_goals
+        goals_against = m.away_goals if is_home else m.home_goals
+        gf += goals_for or 0
+        ga += goals_against or 0
+        
+        if goals_for > goals_against: wins += 1
+        elif goals_for == goals_against: draws += 1
+        else: losses += 1
+    
+    # Palmares simple (pour l'instant)
+    palmares = {
+        'titres': 0,  # on comptera les finales gagnées plus tard
+        'finales': Match.objects.filter(tournament=t, phase='F', played=True).filter(Q(home=team)|Q(away=team)).count(),
+        'participations': 1,
+    }
+    
+    return render(request, 'competition/team_detail.html', {
+        'team': team,
+        'matches': matches[:10],
+        'stats': {'played': played, 'wins': wins, 'draws': draws, 'losses': losses, 'gf': gf, 'ga': ga, 'gd': gf-ga},
+        'palmares': palmares
+    })
+
+
+def reglement(request):
+    return render(request, 'competition/reglement.html')
+
+
+from django.utils import timezone
+from datetime import timedelta
+

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-sm mx-auto mt-20 p-8 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 border border-amber-500/30 backdrop-blur-xl shadow-2xl">
+  <div class="text-center mb-6">
+    <h1 class="text-3xl font-black text-amber-400">MANAGER LOGIN</h1>
+    <p class="text-white/60 text-sm">Goma Efootball Championship</p>
+  </div>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label class="text-xs text-white/70">Nom d'utilisateur</label>
+      <input type="text" name="username" autofocus required class="w-full mt-1 p-3 bg-black/60 border border-white/20 rounded-xl text-white focus:border-amber-400 outline-none">
+    </div>
+    <div>
+      <label class="text-xs text-white/70">Mot de passe</label>
+      <input type="password" name="password" required class="w-full mt-1 p-3 bg-black/60 border border-white/20 rounded-xl text-white focus:border-amber-400 outline-none">
+    </div>
+    {% if form.errors %}<p class="text-red-400 text-xs">Identifiants incorrects</p>{% endif %}
+    <button class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition">Entrer</button>
+  </form>
+</div>
+{% endblock %}

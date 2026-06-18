@@ -1,0 +1,40 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-7xl mx-auto">
+  <h1 class="text-3xl font-black mb-8 text-center">Phase Éliminatoire</h1>
+  <div class="grid lg:grid-cols-5 gap-4 text-sm">
+    <!-- Huitièmes -->
+    <div>
+      <h3 class="font-bold mb-3 text-amber-400 uppercase">Huitièmes</h3>
+      {% for m in r16 %}
+      <div class="p-2 bg-[#0f172a] rounded-lg mb-2 border border-white/10">
+        {{ m.home.name|default:"?" }} <span class="text-white/40">vs</span> {{ m.away.name|default:"?" }}
+      </div>
+      {% empty %}<p class="text-white/40">En attente</p>{% endfor %}
+    </div>
+    <!-- Quarts -->
+    <div>
+      <h3 class="font-bold mb-3 text-orange-400 uppercase">Quarts</h3>
+      {% for m in qf %}<div class="p-2 bg-[#0f172a] rounded-lg mb-2">{{ m.home.name|default:"Vainq R16-1" }} vs {{ m.away.name|default:"Vainq R16-2" }}</div>{% endfor %}
+    </div>
+    <!-- Demis -->
+    <div>
+      <h3 class="font-bold mb-3 text-sky-400 uppercase">Demis</h3>
+      {% for m in sf %}<div class="p-2 bg-[#0f172a] rounded-lg mb-2">{{ m.home.name|default:"?" }} vs {{ m.away.name|default:"?" }}</div>{% endfor %}
+    </div>
+    <!-- 3e place -->
+    <div>
+      <h3 class="font-bold mb-3 text-purple-400 uppercase">3ème place</h3>
+      <div class="p-3 bg-[#0f172a] rounded-lg border border-purple-500/30">
+        {{ third.home.name|default:"Perdant D1" }} vs {{ third.away.name|default:"Perdant D2" }}
+      </div>
+    </div>
+    <!-- Finale -->
+    <div>
+      <h3 class="font-bold mb-3 text-emerald-400 uppercase">Finale</h3>
+      <div class="p-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold rounded-xl">
+        {{ final.home.name|default:"?" }} vs {{ final.away.name|default:"?" }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

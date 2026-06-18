@@ -1,0 +1,41 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-lg mx-auto mt-10 p-8 rounded-3xl bg-[#0f172a] border border-white/10">
+  <h1 class="text-3xl font-black text-center mb-2">Inscription Équipe</h1>
+  <p class="text-center text-white/60 text-sm mb-6">Choisis le nom d'un pays. Un seul joueur par pays.</p>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="text-xs text-white/70">{{ form.name.label }}</label>
+      {{ form.name }}
+      {% if form.name.errors %}<p class="text-red-400 text-xs mt-1">{{ form.name.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div>
+      <label class="text-xs text-white/70">{{ form.abbreviation.label }}</label>
+      {{ form.abbreviation }}
+      <p class="text-[11px] text-white/40">3 lettres max. Ex: RDC, ARG, FRA</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-white/70">{{ form.owner_username.label }}</label>
+        {{ form.owner_username }}
+      </div>
+      <div>
+        <label class="text-xs text-white/70">{{ form.owner_password.label }}</label>
+        {{ form.owner_password }}
+      </div>
+    </div>
+
+    <div>
+      <label class="text-xs text-white/70">{{ form.whatsapp.label }}</label>
+      {{ form.whatsapp }}
+    </div>
+
+    <button class="w-full py-3 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 mt-4">Envoyer l'inscription</button>
+    <p class="text-[11px] text-white/40 text-center mt-2">Après envoi, paie les frais et envoie la preuve dans le groupe WhatsApp pour validation.</p>
+  </form>
+</div>
+{% endblock %}

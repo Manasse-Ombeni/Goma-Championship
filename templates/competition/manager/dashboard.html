@@ -1,0 +1,42 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-6xl mx-auto">
+  <h1 class="text-3xl font-black mb-6">Manager – Goma Efootball</h1>
+
+  <!-- STATS -->
+  <div class="grid md:grid-cols-4 gap-4 mb-8">
+    <div class="p-5 bg-[#0f172a] rounded-2xl border border-white/10 text-center">
+      <div class="text-2xl font-bold text-emerald-400">{{ validated }}</div>
+      <div class="text-xs text-white/50">Validées</div>
+    </div>
+    <div class="p-5 bg-[#0f172a] rounded-2xl border border-white/10 text-center">
+      <div class="text-2xl font-bold">{{ pending|length }}</div>
+      <div class="text-xs text-white/50">En attente</div>
+    </div>
+    <a href="{% url 'generate_draw' %}" class="p-5 bg-amber-500 text-black rounded-2xl font-bold text-center hover:bg-amber-400">Tirage au sort</a>
+    <a href="{% url 'generate_schedule' %}" class="p-5 bg-sky-500 text-black rounded-2xl font-bold text-center hover:bg-sky-400">Générer calendrier</a>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <!-- Validation -->
+    <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-6">
+      <h2 class="font-bold mb-4">Équipes en attente</h2>
+      {% for team in pending %}
+      <div class="flex justify-between py-2 border-b border-white/5">
+        <span>{{ team.name }} ({{ team.owner_username }})</span>
+        <a href="{% url 'validate_team' team.id %}" class="text-emerald-400 text-sm">Valider</a>
+      </div>
+      {% empty %}<p class="text-white/40">Aucune</p>{% endfor %}
+    </div>
+
+    <!-- Outils tournoi -->
+    <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-6">
+      <h2 class="font-bold mb-4">Gestion compétition</h2>
+      <div class="space-y-3">
+        <a href="{% url 'generate_knockout' %}" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10">Générer phases finales</a>
+        <a href="{% url 'bracket' %}" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10">Voir le Bracket →</a>
+        <a href="/admin/" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10">Admin Django →</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

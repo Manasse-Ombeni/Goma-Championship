@@ -1,0 +1,132 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="text-center mb-10">
+    <div class="inline-flex items-center gap-3 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full mb-4">
+      <span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+      <span class="text-amber-400 text-sm font-semibold">SAISON 2026</span>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-black mb-3">RÈGLEMENT OFFICIEL</h1>
+    <p class="text-xl text-white/60">Championnat Goma eFootball</p>
+  </div>
+
+  <!-- Card principale -->
+  <div class="bg-[#0f172a] border border-white/10 rounded-3xl overflow-hidden">
+    
+    <!-- 1. Dispositions -->
+    <div class="p-8 border-b border-white/5">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center font-black text-white shrink-0">1</div>
+        <div>
+          <h2 class="text-2xl font-bold mb-3">Dispositions générales</h2>
+          <p class="text-white/70 leading-relaxed">Le championnat Goma eFootball est une compétition officielle organisée sur eFootball Mobile. Tous les participants s'engagent à respecter l'intégralité du présent règlement dès leur inscription.</p>
+          <div class="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+            <p class="text-red-400 text-sm">⚠️ Le non-respect peut entraîner l'exclusion définitive.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Paramètres -->
+    <div class="p-8 border-b border-white/5">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center font-black text-white shrink-0">2</div>
+        <div class="flex-1">
+          <h2 class="text-2xl font-bold mb-4">Paramètres officiels</h2>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-white/5 p-5 rounded-2xl">
+              <h3 class="font-bold text-amber-400 mb-3">Phase de groupes</h3>
+              <ul class="space-y-2 text-sm text-white/70">
+                <li>• Durée : <b>10 minutes</b></li>
+                <li>• Forme : Excellente (les 2)</li>
+                <li>• Remplacements : 5 max</li>
+                <li>• Météo : Par défaut</li>
+              </ul>
+            </div>
+            <div class="bg-white/5 p-5 rounded-2xl">
+              <h3 class="font-bold text-amber-400 mb-3">Phase finale</h3>
+              <ul class="space-y-2 text-sm text-white/70">
+                <li>• Prolongations : <b>Activées</b></li>
+                <li>• Tirs au but : <b>Activés</b></li>
+                <li>• Aucun match nul possible</li>
+              </ul>
+            </div>
+          <p class="text-xs text-white/50 mt-3">L'équipe à domicile crée la salle et invite.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-4-5 -->
+    <div class="p-8 border-b border-white/5 grid md:grid-cols-3 gap-6">
+      <div>
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center font-bold mb-2">3</div>
+        <h3 class="font-bold mb-2">Délais</h3>
+        <p class="text-sm text-white/60">24h max après publication. Limite : 23h59.</p>
+      </div>
+      <div>
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center font-bold mb-2">4</div>
+        <h3 class="font-bold mb-2">Responsabilité</h3>
+        <p class="text-sm text-white/60">Vérifie le calendrier et contacte ton adversaire.</p>
+      </div>
+      <div>
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center font-bold mb-2">5</div>
+        <h3 class="font-bold mb-2">Connexion</h3>
+        <p class="text-sm text-white/60">Aucune réclamation Internet acceptée.</p>
+      </div>
+    </div>
+
+    <!-- 6. Adversaire injoignable -->
+    <div class="p-8 border-b border-white/5">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center font-black text-white shrink-0">6</div>
+        <div>
+          <h2 class="text-2xl font-bold mb-3">Adversaire injoignable</h2>
+          <ol class="space-y-2 text-white/70">
+            <li>1. Contacte directement</li>
+            <li>2. Signale dans le groupe WhatsApp avant le délai</li>
+            <li>3. Fournis les preuves</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Forfaits -->
+    <div class="p-8 border-b border-white/5">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center font-black text-white shrink-0">7</div>
+        <div class="flex-1">
+          <h2 class="text-2xl font-bold mb-4">Forfaits</h2>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl">
+              <h4 class="font-bold text-red-400">Forfait individuel</h4>
+              <p class="text-3xl font-black my-2">3 - 0</p>
+              <p class="text-sm text-white/60">Pour le joueur présent</p>
+            </div>
+            <div class="p-5 bg-white/5 rounded-2xl">
+              <h4 class="font-bold">Double forfait</h4>
+              <p class="text-sm text-white/60 mt-2">0 point pour les deux. Match non rejoué.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8-12 -->
+    <div class="p-8 space-y-6">
+      <div><h3 class="font-bold text-lg mb-2">8. Validation des résultats</h3><p class="text-white/70 text-sm">Les DEUX joueurs envoient la capture d'écran immédiatement dans le groupe WhatsApp.</p></div>
+      <div><h3 class="font-bold text-lg mb-2">9. Fair-play</h3><p class="text-white/70 text-sm">Respect, courtoisie, esprit sportif. Insultes, provocations, discrimination = sanction.</p></div>
+      <div><h3 class="font-bold text-lg mb-2">10. Tricherie</h3><p class="text-white/70 text-sm">Falsification, faux comptes = exclusion immédiate.</p></div>
+      <div><h3 class="font-bold text-lg mb-2">11. Pouvoir de l'organisation</h3><p class="text-white/70 text-sm">L'organisation tranche en dernier ressort.</p></div>
+      <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+        <h3 class="font-bold text-amber-400 mb-1">12. Acceptation</h3>
+        <p class="text-sm">L'inscription = acceptation totale du règlement.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-8">
+    <a href="{% url 'register' %}" class="px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-600 text-black font-bold rounded-xl">J'accepte et je m'inscris</a>
+  </div>
+</div>
+{% endblock %}

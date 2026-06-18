@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}
+<div class="max-w-md mx-auto p-6 bg-white/5 rounded-2xl">
+<h2 class="font-bold mb-4">{{match.home}} vs {{match.away}}</h2>
+<form method="post">{% csrf_token %}{{form.as_p}}<button class="mt-3 px-4 py-2 bg-amber-500 text-black rounded">Enregistrer</button></form>
+</div>
+{% endblock %}
