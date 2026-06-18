@@ -1,24 +1,24 @@
 # config/settings.py
 import os
-import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
-# Charge le fichier .env en local (ignoré sur Render)
+# Charge le .env en local (ignoré sur Render)
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- SÉCURITÉ ---
-# Sur Render on mettra une vraie clé dans les variables d'environnement
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-goma-competition-dev-key')
-
-# True en local, False sur Render
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Autorise tout en dev, sur Render on mettra ton domaine
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 # --- APPLICATIONS ---
 INSTALLED_APPS = [
@@ -34,7 +34,7 @@ INSTALLED_APPS = [
 # --- MIDDLEWARE ---
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Sert les fichiers statiques sur Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -59,18 +59,24 @@ TEMPLATES = [{
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# --- BASE DE DONNÉES ---
-import dj_database_url
-
-DATABASES = {
-    'default': dj_database_url.parse(
-        os.getenv('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
-# Garde la connexion vivante pour Neon
-DATABASES['default']['OPTIONS'] = {'connect_timeout': 10}
+# --- BASE DE DONNÉES (Neon en prod, SQLite en local) ---
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+    # Garde la connexion vivante pour Neon (évite le timeout)
+    DATABASES['default']['OPTIONS'] = {'connect_timeout': 10}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # --- MOTS DE PASSE ---
 AUTH_PASSWORD_VALIDATORS = []
@@ -83,10 +89,8 @@ USE_TZ = True
 
 # --- FICHIERS STATIQUES ---
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # où Render va collecter
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-
-# Pour WhiteNoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -95,3 +99,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/manager/'
 LOGOUT_REDIRECT_URL = '/'
+
+# --- LOGS (pour voir les erreurs Neon dans Render) ---
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'root': {'handlers': ['console'], 'level': 'INFO'},
+}
