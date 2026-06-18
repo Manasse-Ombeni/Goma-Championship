@@ -17,7 +17,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-goma-competition-dev-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 # Autorise tout en dev, sur Render on mettra ton domaine
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
 # --- APPLICATIONS ---
 INSTALLED_APPS = [
@@ -59,13 +60,17 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # --- BASE DE DONNÉES ---
-# En local = SQLite, sur Render = PostgreSQL automatique
+import dj_database_url
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600
+    'default': dj_database_url.parse(
+        os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=True
     )
 }
+# Garde la connexion vivante pour Neon
+DATABASES['default']['OPTIONS'] = {'connect_timeout': 10}
 
 # --- MOTS DE PASSE ---
 AUTH_PASSWORD_VALIDATORS = []
