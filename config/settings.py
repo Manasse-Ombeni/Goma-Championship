@@ -96,9 +96,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- AUTH ---
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/manager/'
+# Redirection après login/logout
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
 
 # --- LOGS (pour voir les erreurs Neon dans Render) ---
 LOGGING = {
@@ -107,3 +108,4 @@ LOGGING = {
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
     'root': {'handlers': ['console'], 'level': 'INFO'},
 }
+

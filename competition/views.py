@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout
 from django.db.models import Q 
 import random
+from django.contrib.auth.models import User
+from django.contrib import messages
 
 from.models import Tournament, Team, Match, Group
 from.forms import TeamForm, MatchForm
@@ -34,14 +36,34 @@ def team_register(request):
         if form.is_valid():
             team = form.save(commit=False)
             team.tournament = t
-            from django.contrib.auth.models import User
+            
             username = form.cleaned_data['owner_username']
             password = form.cleaned_data['owner_password']
-            user, created = User.objects.get_or_create(username=username)
-            if created or not user.has_usable_password():
+            
+            # — ANTI-DOUBLON —
+            if Team.objects.filter(tournament=t, name__iexact=team.name).exists():
+                form.add_error('name', "Ce nom d'équipe est déjà pris")
+                return render(request, 'competition/register.html', {'form':form})
+            
+            if User.objects.filter(username=username).exists():
+                # si l'user existe déjà, on vérifie s'il a déjà une équipe
+                existing_user = User.objects.get(username=username)
+                if Team.objects.filter(tournament=t, owner=existing_user).exists():
+                    form.add_error('owner_username', "Tu es déjà inscrit")
+                    return render(request, 'competition/register.html', {'form':form})
+                user = existing_user
+            else:
+                user = User.objects.create_user(username=username, password=password)
+            
+            if not user.has_usable_password():
                 user.set_password(password); user.save()
-            team.owner = user; team.save()
-            return redirect('home')
+            
+            team.owner = user
+            team.is_validated = False
+            team.save()
+            
+            # → redirige vers la page "paye maintenant"
+            return redirect('registration_success', pk=team.pk)
     else:
         form = TeamForm()
     return render(request, 'competition/register.html', {'form':form})
@@ -90,16 +112,25 @@ def logout_view(request):
 @user_passes_test(is_manager)
 def manager_dashboard(request):
     t = get_tournament()
+    pending_qs = Team.objects.filter(tournament=t, is_validated=False).order_by('-id')
+    validated_count = Team.objects.filter(tournament=t, is_validated=True).count()
+    
     return render(request, 'competition/manager/dashboard.html', {
-        'pending': Team.objects.filter(tournament=t, is_validated=False),
-        'validated': Team.objects.filter(tournament=t, is_validated=True).count(),
-        'matches': Match.objects.filter(tournament=t, played=False)[:20]
+        'pending': pending_qs,
+        'validated': validated_count,
     })
 
 @login_required
 @user_passes_test(is_manager)
 def validate_team(request, pk):
     team = get_object_or_404(Team, pk=pk); team.is_validated = True; team.save()
+    return redirect('manager')
+
+@login_required
+@user_passes_test(is_manager)
+def reject_team(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    team.delete()
     return redirect('manager')
 
 @login_required
@@ -269,6 +300,68 @@ def reglement(request):
     return render(request, 'competition/reglement.html')
 
 
-from django.utils import timezone
-from datetime import timedelta
+def registration_success(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    return render(request, 'competition/registration_success.html', {'team': team})
+
+
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+
+@login_required
+def my_team(request):
+    t = get_tournament()
+    team = get_object_or_404(Team, tournament=t, owner=request.user)
+    return render(request, 'competition/my_team.html', {'team': team})
+
+@login_required
+def edit_team(request):
+    t = get_tournament()
+    team = get_object_or_404(Team, tournament=t, owner=request.user)
+    
+    if request.method == 'POST':
+        form = TeamForm(request.POST, instance=team)
+        if form.is_valid():
+            new_name = form.cleaned_data['name']
+            # anti-doublon sauf pour son équipe
+            if Team.objects.filter(tournament=t, name__iexact=new_name).exclude(pk=team.pk).exists():
+                messages.error(request, "Ce nom est déjà pris")
+            else:
+                form.save()
+                messages.success(request, "Équipe mise à jour")
+                return redirect('my_team')
+    else:
+        form = TeamForm(instance=team)
+    
+    return render(request, 'competition/edit_team.html', {'form': form, 'team': team})
+
+@login_required
+def delete_team(request):
+    t = get_tournament()
+    team = get_object_or_404(Team, tournament=t, owner=request.user)
+    
+    if request.method == 'POST':
+        team.delete()
+        messages.warning(request, "Ton équipe a été supprimée")
+        return redirect('home')
+    
+    return render(request, 'competition/delete_team.html', {'team': team})
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Mot de passe changé")
+            return redirect('my_team')
+    else:
+        form = PasswordChangeForm(request.user)
+    
+    return render(request, 'competition/change_password.html', {'form': form})
+
+
+
+
 

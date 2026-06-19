@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-xl mx-auto text-center py-12">
+  <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+    <svg class="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+  </div>
+  <h1 class="text-3xl font-black mb-3">Inscription reçue !</h1>
+  <p class="text-white/70 mb-6">Bienvenue <b>{{ team.name }}</b> (@{{ team.pseudo }})</p>
+  
+  <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-left">
+    <h2 class="font-bold text-amber-400 mb-3">Étape 2 : Paiement pour validation</h2>
+    <p class="text-sm mb-2">1. Envoie <b>2 500 FC</b> par Mobile Money :</p>
+    <p class="font-mono bg-black/30 p-3 rounded-lg mb-3">+243992848365 (Ombeni Manase)</p>
+    <p class="text-sm mb-2">2. Envoie la capture + nom d'équipe sur WhatsApp</p>
+    <a href="https://wa.me/243816314467?text=Bonjour, paiement pour {{ team.name }}" 
+       class="block w-full text-center bg-green-600 py-3 rounded-xl font-bold mt-4">
+      Envoyer la preuve
+    </a>
+  </div>
+  <p class="text-xs text-white/40 mt-6">Ton équipe sera validée dans le Manager sous 1h après paiement.</p>
+</div>
+{% endblock %}

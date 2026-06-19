@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Goma Efootball Championship{% endblock %}</title>
   
-  <!-- Tailwind CDN - corrige le bug d'affichage sur Render -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
   
@@ -31,12 +30,18 @@
    <a href="/classement/" class="hover:text-amber-400 transition">Classement</a>
    <a href="/bracket/" class="hover:text-amber-400 transition">Phase Finale</a>
    <a href="{% url 'reglement' %}" class="hover:text-amber-400 transition">Règlement</a>
-   <a href="/inscription/" class="hover:text-amber-400 transition">Inscription</a>
+   
    {% if user.is_authenticated %}
-     <a href="/manager/" class="text-emerald-400 hover:text-emerald-300 transition">Manager</a>
-     <a href="/logout/" class="text-white/60 hover:text-white transition">Deconnexion</a>
+     <div class="flex items-center gap-3 ml-4 pl-4 border-l border-white/10">
+       <a href="{% url 'my_team' %}" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 rounded-lg font-bold transition">Mon Équipe</a>
+       {% if user.is_staff %}
+         <a href="{% url 'manager' %}" class="text-emerald-400 hover:text-emerald-300 transition">Manager</a>
+       {% endif %}
+       <a href="/logout/" class="text-white/60 hover:text-white transition">Déconnexion</a>
+     </div>
    {% else %}
-     <a href="/login/" class="px-4 py-1.5 bg-amber-500 text-black rounded-lg font-bold hover:bg-amber-400 transition">Login</a>
+     <a href="/inscription/" class="hover:text-amber-400 transition">Inscription</a>
+     <a href="/login/" class="ml-2 px-4 py-1.5 bg-amber-500 text-black rounded-lg font-bold hover:bg-amber-400 transition">Login</a>
    {% endif %}
   </div>
   <!-- Mobile burger -->
@@ -60,11 +65,17 @@
    <a href="/classement/" class="block py-3 px-3 rounded-xl hover:bg-white/10">Classement</a>
    <a href="/bracket/" class="block py-3 px-3 rounded-xl hover:bg-white/10">Phase Finale</a>
    <a href="{% url 'reglement' %}" class="block py-3 px-3 rounded-xl hover:bg-white/10">Règlement</a>
-   <a href="/inscription/" class="block py-3 px-3 rounded-xl hover:bg-white/10">Inscription</a>
+   
    {% if user.is_authenticated %}
-     <a href="/manager/" class="block py-3 px-3 rounded-xl text-emerald-400 hover:bg-white/10">Manager</a>
-     <a href="/logout/" class="block py-3 px-3 rounded-xl text-white/60 hover:bg-white/10">Deconnexion</a>
+     <div class="pt-3 mt-3 border-t border-white/10 space-y-1">
+       <a href="{% url 'my_team' %}" class="block py-3 px-3 bg-sky-600 rounded-xl font-bold text-center">Mon Équipe</a>
+       {% if user.is_staff %}
+         <a href="{% url 'manager' %}" class="block py-3 px-3 rounded-xl text-emerald-400 hover:bg-white/10">Manager</a>
+       {% endif %}
+       <a href="/logout/" class="block py-3 px-3 rounded-xl text-white/60 hover:bg-white/10">Déconnexion</a>
+     </div>
    {% else %}
+     <a href="/inscription/" class="block py-3 px-3 rounded-xl hover:bg-white/10">Inscription</a>
      <div class="pt-2 mt-2 border-t border-white/10">
        <a href="/login/" class="block py-3 px-3 bg-amber-500 text-black font-bold rounded-xl text-center">Login</a>
      </div>

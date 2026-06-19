@@ -23,4 +23,10 @@ urlpatterns = [
     path('manager/knockout/', views.generate_knockout, name='generate_knockout'),
     path('equipe/<int:pk>/', views.team_detail, name='team_detail'),
     path('reglement/', views.reglement, name='reglement'),
+    path('inscription/success/<int:pk>/', views.registration_success, name='registration_success'),
+    path('manager/rejeter/<int:pk>/', views.reject_team, name='reject_team'),
+    path('mon-equipe/', views.my_team, name='my_team'),
+    path('mon-equipe/modifier/', views.edit_team, name='edit_team'),
+    path('mon-equipe/supprimer/', views.delete_team, name='delete_team'),
+    path('mon-equipe/mot-de-passe/', views.change_password, name='change_password'),
 ]

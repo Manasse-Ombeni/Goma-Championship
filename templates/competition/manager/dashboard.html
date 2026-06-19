@@ -1,40 +1,85 @@
-{% extends 'base.html' %}{% block content %}
+{% extends 'base.html' %}
+{% block content %}
 <div class="max-w-6xl mx-auto">
   <h1 class="text-3xl font-black mb-6">Manager – Goma Efootball</h1>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="mb-4 p-3 rounded-xl {% if message.tags == 'error' %}bg-red-500/20 text-red-400{% elif message.tags == 'warning' %}bg-amber-500/20 text-amber-400{% else %}bg-emerald-500/20 text-emerald-400{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
 
   <!-- STATS -->
   <div class="grid md:grid-cols-4 gap-4 mb-8">
     <div class="p-5 bg-[#0f172a] rounded-2xl border border-white/10 text-center">
       <div class="text-2xl font-bold text-emerald-400">{{ validated }}</div>
-      <div class="text-xs text-white/50">Validées</div>
+      <div class="text-xs text-white/50">Validées / 32</div>
     </div>
     <div class="p-5 bg-[#0f172a] rounded-2xl border border-white/10 text-center">
-      <div class="text-2xl font-bold">{{ pending|length }}</div>
+      <div class="text-2xl font-bold text-amber-400">{{ pending|length }}</div>
       <div class="text-xs text-white/50">En attente</div>
     </div>
-    <a href="{% url 'generate_draw' %}" class="p-5 bg-amber-500 text-black rounded-2xl font-bold text-center hover:bg-amber-400">Tirage au sort</a>
-    <a href="{% url 'generate_schedule' %}" class="p-5 bg-sky-500 text-black rounded-2xl font-bold text-center hover:bg-sky-400">Générer calendrier</a>
+    <a href="{% url 'generate_draw' %}" class="p-5 bg-amber-500 text-black rounded-2xl font-bold text-center hover:bg-amber-400 transition">Tirage au sort</a>
+    <a href="{% url 'generate_schedule' %}" class="p-5 bg-sky-500 text-black rounded-2xl font-bold text-center hover:bg-sky-400 transition">Générer calendrier</a>
   </div>
 
   <div class="grid md:grid-cols-2 gap-6">
     <!-- Validation -->
     <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-6">
-      <h2 class="font-bold mb-4">Équipes en attente</h2>
-      {% for team in pending %}
-      <div class="flex justify-between py-2 border-b border-white/5">
-        <span>{{ team.name }} ({{ team.owner_username }})</span>
-        <a href="{% url 'validate_team' team.id %}" class="text-emerald-400 text-sm">Valider</a>
+      <h2 class="font-bold mb-4 flex items-center justify-between">
+        Équipes en attente
+        <span class="text-xs px-2 py-1 bg-amber-500/20 text-amber-400 rounded-full">{{ pending|length }}</span>
+      </h2>
+      
+      <div class="space-y-2 max-h-96 overflow-y-auto">
+        {% for team in pending %}
+        <div class="flex items-center justify-between py-3 px-3 bg-white/5 rounded-xl hover:bg-white/10 transition">
+          <div class="min-w-0 flex-1">
+            <div class="font-semibold truncate">{{ team.name }}</div>
+            <div class="text-xs text-white/50">
+              @{{ team.owner.username }} • {{ team.whatsapp|default:"pas de tel" }}
+            </div>
+          </div>
+          <div class="flex gap-2 ml-3">
+            <a href="{% url 'validate_team' team.id %}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition">Valider</a>
+            <a href="{% url 'reject_team' team.id %}" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition" onclick="return confirm('Supprimer {{ team.name }} ?')">Rejeter</a>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-8 text-white/40">
+          <p>Aucune demande en attente</p>
+          <p class="text-xs mt-1">Les inscriptions apparaîtront ici</p>
+        </div>
+        {% endfor %}
       </div>
-      {% empty %}<p class="text-white/40">Aucune</p>{% endfor %}
     </div>
 
     <!-- Outils tournoi -->
     <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-6">
       <h2 class="font-bold mb-4">Gestion compétition</h2>
       <div class="space-y-3">
-        <a href="{% url 'generate_knockout' %}" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10">Générer phases finales</a>
-        <a href="{% url 'bracket' %}" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10">Voir le Bracket →</a>
-        <a href="/admin/" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10">Admin Django →</a>
+        <a href="{% url 'generate_knockout' %}" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10 transition">
+          <div class="font-semibold">Générer phases finales</div>
+          <div class="text-xs text-white/50">Après les poules</div>
+        </a>
+        <a href="{% url 'bracket' %}" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10 transition">
+          <div class="font-semibold">Voir le Bracket →</div>
+          <div class="text-xs text-white/50">Tableau final</div>
+        </a>
+        <a href="/admin/" class="block w-full p-3 bg-white/5 rounded-xl hover:bg-white/10 transition">
+          <div class="font-semibold">Admin Django →</div>
+          <div class="text-xs text-white/50">Gestion avancée</div>
+        </a>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-white/10">
+        <p class="text-xs text-white/40 mb-2">Paiement inscription :</p>
+        <p class="font-mono text-sm bg-black/30 p-2 rounded flex justify-between items-center">
+          <span>+243 992848365 (Ombeni Manase)</span>
+          <a href="https://wa.me/243992848365" target="_blank" class="text-green-400 text-xs">WhatsApp</a>
+        </p>
       </div>
     </div>
   </div>
