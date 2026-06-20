@@ -1,45 +1,79 @@
+import re
 from django import forms
-from .models import Team, Match
-
-PAYS_AUTORISES = [
-    'RDC','Congo','France','Argentine','Brésil','Allemagne','Espagne','Portugal',
-    'Angleterre','Belgique','Maroc','Sénégal','Cameroun','Côte d’Ivoire','Nigeria',
-    'Ghana','Egypte','Tunisie','Algérie','USA','Mexique','Canada','Japon',
-    'Corée du Sud','Australie','Italie','Pays-Bas','Suisse','Croatie','Uruguay',
-    'Colombie','Chili','Pérou','Équateur','Paraguay','Danemark','Norvège','Suède'
-]
+from django.contrib.auth.models import User
+from .models import Team
 
 class TeamForm(forms.ModelForm):
+    owner_username = forms.CharField(
+        label="Nom d'utilisateur",
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10',
+            'placeholder': 'ex: ombeni10'
+        })
+    )
+    owner_password = forms.CharField(
+        label="Mot de passe",
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10',
+            'placeholder': '••••••••'
+        })
+    )
+
     class Meta:
         model = Team
-        fields = ['name','abbreviation','owner_username','owner_password','whatsapp']
+        # ← J'AI ENLEVÉ 'pseudo' qui n'existe pas dans ton modèle
+        fields = ['name', 'abbreviation', 'whatsapp']
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder':'Ex: France','class':'w-full p-3 bg-black/60 border border-white/20 rounded-xl'}),
-            'abbreviation': forms.TextInput(attrs={'placeholder':'Ex: FRA','maxlength':'3','class':'w-full p-3 bg-black/60 border border-white/20 rounded-xl uppercase'}),
-            'owner_username': forms.TextInput(attrs={'placeholder':'Ex: halsey_10','class':'w-full p-3 bg-black/60 border border-white/20 rounded-xl'}),
-            'owner_password': forms.PasswordInput(attrs={'placeholder':'Choisis un mot de passe','class':'w-full p-3 bg-black/60 border border-white/20 rounded-xl'}),
-            'whatsapp': forms.TextInput(attrs={'placeholder':'Ex: +243970000000','class':'w-full p-3 bg-black/60 border border-white/20 rounded-xl'}),
+            'name': forms.TextInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10',
+                'placeholder': 'N\'importe quel pays : France, Brésil...'
+            }),
+            'abbreviation': forms.TextInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10',
+                'placeholder': 'FRA'
+            }),
+            'whatsapp': forms.TextInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10',
+                'placeholder': '+243992848365 ou +33...'
+            }),
         }
         labels = {
-            'name': "Nom de l'équipe (pays)",
-            'abbreviation': 'Abréviation équipe',
-            'owner_username': "Nom d'utilisateur",
-            'owner_password': 'Mot de passe',
-            'whatsapp': 'Numéro WhatsApp',
+            'name': 'Nom de l’équipe',
+            'abbreviation': 'Abréviation',
+            'whatsapp': 'WhatsApp (avec indicatif)',
         }
 
     def clean_name(self):
-        name = self.cleaned_data['name'].strip()
-        if name not in PAYS_AUTORISES:
-            raise forms.ValidationError(f"Choisis un pays valide. Exemples : RDC, France, Argentine...")
-        if Team.objects.filter(name__iexact=name).exists():
-            raise forms.ValidationError("Ce pays est déjà pris par une autre équipe.")
+        name = self.cleaned_data.get('name', '').strip()
+        if not name:
+            raise forms.ValidationError("Donne un nom à ton équipe")
         return name
 
-    def clean_abbreviation(self):
-        return self.cleaned_data['abbreviation'].upper()[:3]
+    def clean_whatsapp(self):
+        whatsapp = self.cleaned_data.get('whatsapp', '').strip().replace(' ', '')
+        if not whatsapp:
+            raise forms.ValidationError("Numéro requis")
+        if not whatsapp.startswith('+'):
+            raise forms.ValidationError("Mets l'indicatif : +243, +33, +1, +44...")
+        if not re.match(r'^\+\d{8,15}$', whatsapp):
+            raise forms.ValidationError("Format : +[indicatif][numéro]. Ex: +243992848365")
+        return whatsapp
 
-class MatchForm(forms.ModelForm):
-    class Meta:
-        model = Match
-        fields = ['home_goals','away_goals']
+    def clean_owner_username(self):
+        username = self.cleaned_data.get('owner_username', '').strip()
+        if not username:
+            return username
+        if not self.instance.pk and User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError("Ce nom d'utilisateur est déjà pris")
+        return username
+
+    def clean_owner_password(self):
+        password = self.cleaned_data.get('owner_password', '')
+        if not self.instance.pk and not password:
+            raise forms.ValidationError("Mot de passe requis")
+        if password and len(password) < 6:
+            raise forms.ValidationError("Minimum 6 caractères")
+        return password

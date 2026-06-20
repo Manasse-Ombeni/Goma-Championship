@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 
 from.models import Tournament, Team, Match, Group
-from.forms import TeamForm, MatchForm
+from .forms import TeamForm
+from django import forms
 
 def get_tournament():
     t, _ = Tournament.objects.get_or_create(pk=1, defaults={'name': 'Goma Efootball Championship'})
@@ -113,11 +114,12 @@ def logout_view(request):
 def manager_dashboard(request):
     t = get_tournament()
     pending_qs = Team.objects.filter(tournament=t, is_validated=False).order_by('-id')
-    validated_count = Team.objects.filter(tournament=t, is_validated=True).count()
+    validated_qs = Team.objects.filter(tournament=t, is_validated=True).order_by('name')
     
     return render(request, 'competition/manager/dashboard.html', {
         'pending': pending_qs,
-        'validated': validated_count,
+        'validated_teams': validated_qs,
+        'validated': validated_qs.count(),
     })
 
 @login_required
@@ -360,6 +362,36 @@ def change_password(request):
         form = PasswordChangeForm(request.user)
     
     return render(request, 'competition/change_password.html', {'form': form})
+
+
+@login_required
+@user_passes_test(is_manager)
+def manager_edit_team(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    if request.method == 'POST':
+        form = TeamForm(request.POST, instance=team)
+        # en édition on ignore les champs user
+        form.fields['owner_username'].required = False
+        form.fields['owner_password'].required = False
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"{team.name} modifiée")
+            return redirect('manager')
+    else:
+        form = TeamForm(instance=team)
+        form.fields['owner_username'].widget = forms.HiddenInput()
+        form.fields['owner_password'].widget = forms.HiddenInput()
+    
+    return render(request, 'competition/manager/edit_team.html', {'form': form, 'team': team})
+
+@login_required
+@user_passes_test(is_manager)
+def manager_delete_any_team(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    name = team.name
+    team.delete()
+    messages.warning(request, f"{name} supprimée définitivement")
+    return redirect('manager')
 
 
 

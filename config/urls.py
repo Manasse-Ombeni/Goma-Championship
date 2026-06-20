@@ -29,4 +29,7 @@ urlpatterns = [
     path('mon-equipe/modifier/', views.edit_team, name='edit_team'),
     path('mon-equipe/supprimer/', views.delete_team, name='delete_team'),
     path('mon-equipe/mot-de-passe/', views.change_password, name='change_password'),
+
+    path('manager/equipe/<int:pk>/modifier/', views.manager_edit_team, name='manager_edit_team'),
+    path('manager/equipe/<int:pk>/supprimer/', views.manager_delete_any_team, name='manager_delete_team'),
 ]
