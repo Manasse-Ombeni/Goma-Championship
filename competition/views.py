@@ -259,13 +259,25 @@ def generate_draw(request):
 @user_passes_test(is_manager)
 def generate_schedule(request):
     t = get_tournament()
-    Match.objects.filter(tournament=t, phase='group').delete()
-    for g in Group.objects.filter(tournament=t):
-        teams = list(Team.objects.filter(group=g, is_validated=True))
-        for i in range(len(teams)):
-            for j in range(i+1, len(teams)):
-                Match.objects.create(tournament=t, phase='group', group=g, home=teams[i], away=teams[j])
-    return redirect('schedule')
+    Match.objects.filter(tournament=t, stage='group').delete()
+
+    for group in Group.objects.filter(tournament=t):
+        teams = list(group.team_set.all())
+        if len(teams)!= 4:
+            continue
+
+        # Round-robin 3 journées
+        fixtures = [
+            (0,1, 2,3), # J1
+            (0,2, 1,3), # J2
+            (0,3, 1,2), # J3
+        ]
+        for day, (a,b,c,d) in enumerate(fixtures, 1):
+            Match.objects.create(tournament=t, group=group, home=teams[a], away=teams[b], matchday=day, stage='group')
+            Match.objects.create(tournament=t, group=group, home=teams[c], away=teams[d], matchday=day, stage='group')
+
+    messages.success(request, "Calendrier généré : 3 journées, 48 matchs")
+    return redirect('manager')
 
 @login_required
 @user_passes_test(is_manager)
@@ -473,6 +485,22 @@ def set_strength(request, pk):
         messages.success(request, f"{team.name} → {team.collective_strength}")
         return redirect('manager')
     return render(request, 'competition/manager/set_strength.html', {'team': team})
+
+
+@login_required
+@user_passes_test(is_manager)
+def reset_draw(request):
+    t = get_tournament()
+    Team.objects.filter(tournament=t).update(group=None)
+    Match.objects.filter(tournament=t, stage='group').delete()
+    messages.warning(request, "Tirage réinitialisé. Tu peux relancer.")
+    return redirect('manager')
+
+
+def groups_view(request):
+    t = get_tournament()
+    groups = Group.objects.filter(tournament=t).prefetch_related('team_set').order_by('name')
+    return render(request, 'competition/groups.html', {'groups': groups})
 
 
 

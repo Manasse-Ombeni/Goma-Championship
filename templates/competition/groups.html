@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto">
+  <h1 class="text-3xl font-black mb-8">Groupes — Phase de poules</h1>
+  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+    {% for g in groups %}
+    <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-5">
+      <h2 class="text-xl font-bold mb-3 text-emerald-400">Groupe {{ g.name }}</h2>
+      <div class="space-y-2">
+        {% for team in g.team_set.all|dictsortreversed:"collective_strength" %}
+        <div class="flex justify-between text-sm py-2 border-b border-white/5 last:border-0">
+          <span>{{ team.name }}</span>
+          <span class="font-mono text-amber-400">{{ team.collective_strength|default:"—" }}</span>
+        </div>
+        {% empty %}
+        <p class="text-white/40 text-xs">Vide</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

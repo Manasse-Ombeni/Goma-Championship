@@ -33,5 +33,6 @@ urlpatterns = [
     path('manager/equipe/<int:pk>/modifier/', views.manager_edit_team, name='manager_edit_team'),
     path('manager/equipe/<int:pk>/supprimer/', views.manager_delete_any_team, name='manager_delete_team'),
     path('manager/utilisateurs/', views.manager_users, name='manager_users'),path('manager/equipe/<int:pk>/force/', views.set_strength, name='set_strength'),
-
+    path('manager/reset-tirage/', views.reset_draw, name='reset_draw'),
+    path('groupes/', views.groups_view, name='groups'),
 ]
