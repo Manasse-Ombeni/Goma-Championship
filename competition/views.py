@@ -214,6 +214,8 @@ def match_update(request, pk):
 import random
 from django.contrib import messages
 
+import random
+
 @login_required
 @user_passes_test(is_manager)
 def generate_draw(request):
@@ -221,40 +223,58 @@ def generate_draw(request):
     teams = list(Team.objects.filter(tournament=t, is_validated=True))
 
     if len(teams)!= 32:
-        messages.error(request, "Il faut 32 équipes validées")
+        messages.error(request, f"Il faut 32 équipes validées (actuellement {len(teams)})")
         return redirect('manager')
 
-    # Récupère ou crée les groupes A-H
+    # reset d'abord
+    Team.objects.filter(tournament=t).update(group=None)
+    Match.objects.filter(tournament=t, phase='group').delete()
+
+    # groupes A-H
     groups = {}
     for letter in ['A','B','C','D','E','F','G','H']:
         grp, _ = Group.objects.get_or_create(tournament=t, name=letter)
         groups[letter] = grp
 
+    # sépare
     with_strength = [tm for tm in teams if tm.collective_strength > 0]
     without_strength = [tm for tm in teams if tm.collective_strength == 0]
 
     with_strength.sort(key=lambda x: x.collective_strength, reverse=True)
+    random.shuffle(without_strength)
 
-    # 4 pots
-    pots = [with_strength[i::4] for i in range(4)]
+    # --- CRÉE 4 POTS DE 8 ÉQUIPES ---
+    pots = [[], [], [], []]
+
+    # remplis avec les forces
+    for i, team in enumerate(with_strength):
+        pots[i % 4].append(team)
+
+    # complète avec les sans-force
+    all_teams = with_strength + without_strength
+    # on veut exactement 8 par pot
+    for pot in pots:
+        while len(pot) < 8:
+            if without_strength:
+                pot.append(without_strength.pop(0))
+            else:
+                break
+
+    # mélange chaque pot
     for pot in pots:
         random.shuffle(pot)
 
-    pots[3].extend(without_strength)
-    random.shuffle(pots[3])
-
-    # Distribution
+    # --- DISTRIBUTION : 1 équipe de chaque pot par groupe ---
     letters = ['A','B','C','D','E','F','G','H']
-    for group_idx in range(8):
+    for idx, letter in enumerate(letters):
         for pot_idx in range(4):
             if pots[pot_idx]:
                 team = pots[pot_idx].pop(0)
-                team.group = groups[letters[group_idx]] # ← objet Group, pas string
+                team.group = groups[letter]
                 team.save()
 
-    messages.success(request, "Tirage équilibré effectué!")
+    messages.success(request, "✅ Tirage équilibré : 8 groupes de 4")
     return redirect('manager')
-
 
 @login_required
 @user_passes_test(is_manager)
