@@ -211,6 +211,9 @@ def match_update(request, pk):
         form = MatchForm(instance=match)
     return render(request, 'competition/match_form.html', {'form':form,'match':match})
 
+import random
+from django.contrib import messages
+
 @login_required
 @user_passes_test(is_manager)
 def generate_draw(request):
@@ -221,33 +224,35 @@ def generate_draw(request):
         messages.error(request, "Il faut 32 équipes validées")
         return redirect('manager')
 
-    # 1. Séparer équipes avec force et sans force
+    # Récupère ou crée les groupes A-H
+    groups = {}
+    for letter in ['A','B','C','D','E','F','G','H']:
+        grp, _ = Group.objects.get_or_create(tournament=t, name=letter)
+        groups[letter] = grp
+
     with_strength = [tm for tm in teams if tm.collective_strength > 0]
     without_strength = [tm for tm in teams if tm.collective_strength == 0]
 
-    # 2. Trier les fortes du plus fort au plus faible
     with_strength.sort(key=lambda x: x.collective_strength, reverse=True)
 
-    # 3. Créer 4 chapeaux de 8 équipes
-    pots = [with_strength[i::4] for i in range(4)] # pot1 = 8 plus forts, pot4 = 8 plus faibles
-    # Mélanger chaque pot pour garder du hasard
+    # 4 pots
+    pots = [with_strength[i::4] for i in range(4)]
     for pot in pots:
         random.shuffle(pot)
 
-    # 4. Ajouter les équipes sans force dans le pot 4
     pots[3].extend(without_strength)
     random.shuffle(pots[3])
 
-    # 5. Distribuer : 1 équipe de chaque pot par groupe
-    groups = ['A','B','C','D','E','F','G','H']
+    # Distribution
+    letters = ['A','B','C','D','E','F','G','H']
     for group_idx in range(8):
         for pot_idx in range(4):
             if pots[pot_idx]:
                 team = pots[pot_idx].pop(0)
-                team.group = groups[group_idx]
+                team.group = groups[letters[group_idx]] # ← objet Group, pas string
                 team.save()
 
-    messages.success(request, "Tirage équilibré effectué! Chaque groupe a 1 forte, 1 moyenne...")
+    messages.success(request, "Tirage équilibré effectué!")
     return redirect('manager')
 
 @login_required
