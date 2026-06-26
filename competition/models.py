@@ -14,6 +14,7 @@ class Team(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=50, unique=True)  # Pays
+    collective_strength = models.IntegerField(default=0, blank=True, help_text="Force collective eFootball (ex: 3209)")
     abbreviation = models.CharField(max_length=3)
     owner = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     owner_username = models.CharField(max_length=150, default='')

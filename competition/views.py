@@ -113,14 +113,29 @@ def logout_view(request):
 @user_passes_test(is_manager)
 def manager_dashboard(request):
     t = get_tournament()
-    pending_qs = Team.objects.filter(tournament=t, is_validated=False).order_by('-id')
-    validated_qs = Team.objects.filter(tournament=t, is_validated=True).order_by('name')
     
-    return render(request, 'competition/manager/dashboard.html', {
-        'pending': pending_qs,
-        'validated_teams': validated_qs,
-        'validated': validated_qs.count(),
-    })
+    # Querysets
+    all_teams = Team.objects.filter(tournament=t)
+    pending_teams = all_teams.filter(is_validated=False).order_by('id')
+    validated_teams = all_teams.filter(is_validated=True).order_by('-collective_strength', 'name')
+    
+    # Compteurs (entiers, pas QuerySet)
+    total_teams = all_teams.count()
+    pending = pending_teams.count()
+    validated = validated_teams.count()
+    
+    # Groupes remplis
+    groups_filled = f"{Team.objects.filter(tournament=t, group__isnull=False).values('group').distinct().count()}/8"
+    
+    context = {
+        'total_teams': total_teams,
+        'pending': pending,
+        'validated': validated,
+        'pending_teams': pending_teams,
+        'validated_teams': validated_teams,
+        'groups_filled': groups_filled,
+    }
+    return render(request, 'competition/manager/dashboard.html', context)
 
 @login_required
 @user_passes_test(is_manager)
@@ -201,17 +216,39 @@ def match_update(request, pk):
 def generate_draw(request):
     t = get_tournament()
     teams = list(Team.objects.filter(tournament=t, is_validated=True))
+
     if len(teams)!= 32:
-        # On exige exactement 32 pour respecter le cahier
+        messages.error(request, "Il faut 32 équipes validées")
         return redirect('manager')
-    random.shuffle(teams)
-    Group.objects.filter(tournament=t).delete()
-    Team.objects.filter(tournament=t).update(points=0, goals_for=0, goals_against=0, group=None)
-    groups = [Group.objects.create(tournament=t, name=n) for n in ['A','B','C','D','E','F','G','H']]
-    for i, team in enumerate(teams):
-        team.group = groups[i // 4] # 4 équipes par groupe
-        team.save()
-    return redirect('standings')
+
+    # 1. Séparer équipes avec force et sans force
+    with_strength = [tm for tm in teams if tm.collective_strength > 0]
+    without_strength = [tm for tm in teams if tm.collective_strength == 0]
+
+    # 2. Trier les fortes du plus fort au plus faible
+    with_strength.sort(key=lambda x: x.collective_strength, reverse=True)
+
+    # 3. Créer 4 chapeaux de 8 équipes
+    pots = [with_strength[i::4] for i in range(4)] # pot1 = 8 plus forts, pot4 = 8 plus faibles
+    # Mélanger chaque pot pour garder du hasard
+    for pot in pots:
+        random.shuffle(pot)
+
+    # 4. Ajouter les équipes sans force dans le pot 4
+    pots[3].extend(without_strength)
+    random.shuffle(pots[3])
+
+    # 5. Distribuer : 1 équipe de chaque pot par groupe
+    groups = ['A','B','C','D','E','F','G','H']
+    for group_idx in range(8):
+        for pot_idx in range(4):
+            if pots[pot_idx]:
+                team = pots[pot_idx].pop(0)
+                team.group = groups[group_idx]
+                team.save()
+
+    messages.success(request, "Tirage équilibré effectué! Chaque groupe a 1 forte, 1 moyenne...")
+    return redirect('manager')
 
 @login_required
 @user_passes_test(is_manager)
@@ -392,6 +429,45 @@ def manager_delete_any_team(request, pk):
     team.delete()
     messages.warning(request, f"{name} supprimée définitivement")
     return redirect('manager')
+
+
+@login_required
+@user_passes_test(is_manager)
+def manager_users(request):
+    # Tous les utilisateurs (avec leur équipe si elle existe)
+    users = User.objects.all().prefetch_related('team_set').order_by('-is_staff', 'username')
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+        u = get_object_or_404(User, pk=user_id)
+        
+        if action == 'promote':
+            u.is_staff = True
+            u.save()
+            messages.success(request, f"{u.username} est maintenant Manager")
+        elif action == 'demote':
+            if u != request.user:
+                u.is_staff = False
+                u.save()
+                messages.warning(request, f"{u.username} n'est plus Manager")
+        
+        return redirect('manager_users')
+    
+    return render(request, 'competition/manager/users.html', {'users': users})
+
+
+@login_required
+@user_passes_test(is_manager)
+def set_strength(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    if request.method == 'POST':
+        strength = request.POST.get('strength', '0')
+        team.collective_strength = int(strength) if strength.isdigit() else 0
+        team.save()
+        messages.success(request, f"{team.name} → {team.collective_strength}")
+        return redirect('manager')
+    return render(request, 'competition/manager/set_strength.html', {'team': team})
 
 
 

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto">
+  <h1 class="text-2xl font-bold mb-4">Force de {{ team.name }}</h1>
+  <form method="post" class="bg-[#0f172a] p-6 rounded-2xl">
+    {% csrf_token %}
+    <input type="number" name="strength" value="{{ team.collective_strength }}" placeholder="ex: 3209" class="w-full p-3 bg-black/30 rounded-xl mb-4">
+    <button class="w-full py-3 bg-emerald-600 rounded-xl font-bold">Enregistrer</button>
+  </form>
+</div>
+{% endblock %}
