@@ -487,13 +487,25 @@ def set_strength(request, pk):
     return render(request, 'competition/manager/set_strength.html', {'team': team})
 
 
+from django.db import transaction
+
 @login_required
 @user_passes_test(is_manager)
 def reset_draw(request):
     t = get_tournament()
-    Team.objects.filter(tournament=t).update(group=None)
-    Match.objects.filter(tournament=t, stage='group').delete()
-    messages.warning(request, "Tirage réinitialisé. Tu peux relancer.")
+    try:
+        with transaction.atomic():
+            # 1. supprime les matchs de poule
+            Match.objects.filter(tournament=t, stage='group').delete()
+            # 2. vide les groupes
+            Team.objects.filter(tournament=t).update(group=None)
+            # 3. optionnel : vide aussi les groupes vides
+            # Group.objects.filter(tournament=t).delete()
+        
+        messages.success(request, "✅ Tirage réinitialisé. Tu peux relancer.")
+    except Exception as e:
+        messages.error(request, f"Erreur reset: {str(e)}")
+    
     return redirect('manager')
 
 
