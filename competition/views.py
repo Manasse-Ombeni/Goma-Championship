@@ -255,28 +255,34 @@ def generate_draw(request):
     messages.success(request, "Tirage équilibré effectué!")
     return redirect('manager')
 
+
 @login_required
 @user_passes_test(is_manager)
 def generate_schedule(request):
     t = get_tournament()
-    Match.objects.filter(tournament=t, stage='group').delete()
+    # nettoie d'abord
+    Match.objects.filter(tournament=t, phase='group').delete()
 
     for group in Group.objects.filter(tournament=t):
         teams = list(group.team_set.all())
         if len(teams)!= 4:
             continue
 
-        # Round-robin 3 journées
-        fixtures = [
-            (0,1, 2,3), # J1
-            (0,2, 1,3), # J2
-            (0,3, 1,2), # J3
-        ]
-        for day, (a,b,c,d) in enumerate(fixtures, 1):
-            Match.objects.create(tournament=t, group=group, home=teams[a], away=teams[b], matchday=day, stage='group')
-            Match.objects.create(tournament=t, group=group, home=teams[c], away=teams[d], matchday=day, stage='group')
+        # 3 journées round-robin
+        fixtures = [(0,1,2,3), (0,2,1,3), (0,3,1,2)]
+        for a,b,c,d in fixtures:
+            Match.objects.create(
+                tournament=t, group=group,
+                home=teams[a], away=teams[b],
+                phase='group', played=False
+            )
+            Match.objects.create(
+                tournament=t, group=group,
+                home=teams[c], away=teams[d],
+                phase='group', played=False
+            )
 
-    messages.success(request, "Calendrier généré : 3 journées, 48 matchs")
+    messages.success(request, "📅 Calendrier généré : 48 matchs de poules")
     return redirect('manager')
 
 @login_required
@@ -494,18 +500,13 @@ from django.db import transaction
 def reset_draw(request):
     t = get_tournament()
     try:
-        with transaction.atomic():
-            # 1. supprime les matchs de poule
-            Match.objects.filter(tournament=t, stage='group').delete()
-            # 2. vide les groupes
-            Team.objects.filter(tournament=t).update(group=None)
-            # 3. optionnel : vide aussi les groupes vides
-            # Group.objects.filter(tournament=t).delete()
-        
-        messages.success(request, "✅ Tirage réinitialisé. Tu peux relancer.")
+        # supprime les matchs de poule (phase='group')
+        Match.objects.filter(tournament=t, phase='group').delete()
+        # vide les groupes des équipes
+        Team.objects.filter(tournament=t).update(group=None)
+        messages.success(request, "✅ Tirage réinitialisé")
     except Exception as e:
-        messages.error(request, f"Erreur reset: {str(e)}")
-    
+        messages.error(request, f"Erreur reset: {e}")
     return redirect('manager')
 
 
@@ -513,6 +514,48 @@ def groups_view(request):
     t = get_tournament()
     groups = Group.objects.filter(tournament=t).prefetch_related('team_set').order_by('name')
     return render(request, 'competition/groups.html', {'groups': groups})
+
+
+
+@login_required
+@user_passes_test(is_manager)
+def enter_result(request, match_id):
+    match = get_object_or_404(Match, id=match_id)
+    if request.method == 'POST':
+        match.home_goals = int(request.POST.get('home_goals', 0))
+        match.away_goals = int(request.POST.get('away_goals', 0))
+        match.played = True
+        match.save()
+        
+        # met à jour classement
+        update_standings(match.group)
+        messages.success(request, f"{match.home} {match.home_goals}-{match.away_goals} {match.away}")
+        return redirect('calendar')
+    return render(request, 'competition/manager/enter_result.html', {'match': match})
+
+def update_standings(group):
+    teams = group.team_set.all()
+    for t in teams:
+        t.points = t.goals_for = t.goals_against = 0
+        t.save()
+    
+    for m in Match.objects.filter(group=group, played=True):
+        m.home.goals_for += m.home_goals
+        m.home.goals_against += m.away_goals
+        m.away.goals_for += m.away_goals
+        m.away.goals_against += m.home_goals
+        
+        if m.home_goals > m.away_goals:
+            m.home.points += 3
+        elif m.away_goals > m.home_goals:
+            m.away.points += 3
+        else:
+            m.home.points += 1
+            m.away.points += 1
+        m.home.save()
+        m.away.save()
+
+
 
 
 

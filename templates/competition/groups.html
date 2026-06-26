@@ -1,21 +1,45 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-6xl mx-auto">
-  <h1 class="text-3xl font-black mb-8">Groupes — Phase de poules</h1>
-  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+<div class="max-w-7xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-4xl font-black">Phase de Groupes</h1>
+    <a href="{% url 'manager' %}" class="px-4 py-2 bg-white/5 rounded-xl text-sm hover:bg-white/10">← Manager</a>
+  </div>
+
+  <div class="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
     {% for g in groups %}
-    <div class="bg-[#0f172a] border border-white/10 rounded-2xl p-5">
-      <h2 class="text-xl font-bold mb-3 text-emerald-400">Groupe {{ g.name }}</h2>
-      <div class="space-y-2">
-        {% for team in g.team_set.all|dictsortreversed:"collective_strength" %}
-        <div class="flex justify-between text-sm py-2 border-b border-white/5 last:border-0">
-          <span>{{ team.name }}</span>
-          <span class="font-mono text-amber-400">{{ team.collective_strength|default:"—" }}</span>
-        </div>
-        {% empty %}
-        <p class="text-white/40 text-xs">Vide</p>
-        {% endfor %}
+    <div class="bg-[#0f172a] border border-white/10 rounded-2xl overflow-hidden">
+      <div class="bg-gradient-to-r from-emerald-600/20 to-teal-600/20 px-5 py-3 border-b border-white/10">
+        <h2 class="text-xl font-black tracking-wider">GROUPE {{ g.name }}</h2>
       </div>
+      <table class="w-full">
+        <thead class="text-[11px] uppercase text-white/40">
+          <tr class="border-b border-white/5">
+            <th class="text-left px-5 py-2 font-medium">#</th>
+            <th class="text-left py-2 font-medium">Équipe</th>
+            <th class="text-right px-5 py-2 font-medium">Force</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          {% for team in g.team_set.all|dictsortreversed:"collective_strength" %}
+          <tr class="hover:bg-white/[0.03] transition">
+            <td class="px-5 py-3 text-white/50 text-sm">{{ forloop.counter }}</td>
+            <td class="py-3">
+              <div class="font-semibold">{{ team.name }}</div>
+              <div class="text-[11px] text-white/40">@{{ team.owner.username }}</div>
+            </td>
+            <td class="px-5 py-3 text-right">
+              <span class="font-mono text-sm {% if team.collective_strength > 0 %}text-amber-400{% else %}text-white/30{% endif %}">
+                {{ team.collective_strength|default:"—" }}
+              </span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="px-5 py-8 text-center text-white/30 text-sm">En attente du tirage</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% endfor %}
   </div>
 </div>
