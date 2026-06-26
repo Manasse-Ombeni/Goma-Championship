@@ -1,133 +1,103 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-6xl mx-auto">
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-3xl font-black">Calendrier</h1>
+<div class="max-w-5xl mx-auto">
+  <!-- HEADER TABS -->
+  <div class="flex items-center justify-between mb-4">
     <div class="flex gap-2">
-      <button onclick="filterMatches('all')" id="btn-all" class="px-4 py-2 bg-white/10 rounded-xl text-sm font-medium">Tous</button>
-      <button onclick="filterMatches('mine')" id="btn-mine" class="px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm">Mes matchs {% if user_team %}({{ user_team.abbreviation }}){% endif %}</button>
+      <button onclick="filterStatus('all')" id="tab-all" class="px-4 py-1.5 bg-red-600 text-white rounded-lg text-sm font-bold">TOUS</button>
+      <button onclick="filterStatus('live')" id="tab-live" class="px-4 py-1.5 bg-[#1e293b] text-white/60 rounded-lg text-sm">DIRECT</button>
+      <button onclick="filterStatus('done')" id="tab-done" class="px-4 py-1.5 bg-[#1e293b] text-white/60 rounded-lg text-sm">TERMINÉS</button>
+      <button onclick="filterStatus('todo')" id="tab-todo" class="px-4 py-1.5 bg-[#1e293b] text-white/60 rounded-lg text-sm">PRÉVUS</button>
     </div>
+    <div class="text-sm text-white/50">Phase de Groupes • 48 matchs</div>
   </div>
 
-  <!-- TABLEAU DESKTOP -->
-  <div class="hidden md:block bg-[#0f172a] border border-white/10 rounded-2xl overflow-hidden">
-    <div class="grid grid-cols-12 gap-4 px-5 py-3 bg-white/[0.03] text-[11px] uppercase tracking-wider text-white/50 font-semibold">
-      <div class="col-span-1">J.</div>
-      <div class="col-span-2">Groupe</div>
-      <div class="col-span-3 text-right">Domicile</div>
-      <div class="col-span-2 text-center">Score</div>
-      <div class="col-span-3">Extérieur</div>
-      <div class="col-span-1 text-right">Action</div>
+  <!-- LISTE -->
+  <div class="bg-[#0f172a] rounded-2xl border border-white/10 overflow-hidden">
+    <!-- ENTETE COMPETITION -->
+    <div class="flex items-center justify-between px-4 py-3 bg-[#0d1b2a] border-b border-white/10">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">🌍</span>
+        <span class="font-bold text-sm">MONDE: Goma Efootball</span>
+      </div>
+      <a href="{% url 'groups' %}" class="text-xs text-sky-400 hover:underline">Classement</a>
     </div>
 
-    <div id="matches-table" class="divide-y divide-white/5">
+    <div id="matches-list" class="divide-y divide-white/[0.05]">
       {% for m in matches %}
-      <div class="grid grid-cols-12 gap-4 px-5 py-4 items-center hover:bg-white/[0.02] transition {% if m.is_mine %}bg-amber-500/[0.04] border-l-2 border-amber-500{% endif %}" data-mine="{% if m.is_mine %}1{% else %}0{% endif %}">
-        <!-- Journée -->
-        <div class="col-span-1">
-          <span class="text-sm font-mono text-white/70">J{{ forloop.counter|add:"-1"|divisibleby:"2"|yesno:"2,1,3" }}</span>
+      <div class="group flex items-center px-4 py-3 hover:bg-white/[0.03] transition"
+           data-status="{% if m.played %}done{% else %}todo{% endif %}"
+           data-mine="{% if m.is_mine %}1{% else %}0{% endif %}">
+
+        <!-- STAR + HEURE -->
+        <div class="w-12 flex items-center gap-3">
+          <svg class="w-4 h-4 text-white/20 group-hover:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.036 6.29M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.036 6.29"/></svg>
+          <span class="text-xs font-mono text-white/60">J{{ m.group.name }}</span>
         </div>
 
-        <!-- Groupe -->
-        <div class="col-span-2">
-          <span class="px-2.5 py-1 bg-white/10 rounded-lg text-xs font-bold">Gr {{ m.group.name }}</span>
-        </div>
-
-        <!-- Domicile -->
-        <div class="col-span-3 flex items-center justify-end gap-2">
-          <div class="text-right">
-            <div class="font-semibold text-[15px] leading-tight">{{ m.home.name }}</div>
-            <div class="text-[11px] text-white/40">@{{ m.home.owner_username }}</div>
+        <!-- EQUIPES -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-3.5 bg-gradient-to-r from-sky-600 to-blue-700 rounded-sm flex items-center justify-center text-[8px] font-bold">{{ m.home.abbreviation|slice:":2" }}</div>
+            <span class="text-[14px] {% if m.played and m.home_goals > m.away_goals %}font-bold text-white{% else %}text-white/90{% endif %} truncate">{{ m.home.name }}</span>
+            {% if m.home.whatsapp %}
+            <a href="https://wa.me/{{ m.home.whatsapp|cut:'+'|cut:' ' }}" target="_blank" class="opacity-0 group-hover:opacity-100 transition" title="{{ m.home.owner_username }}">
+              <img src="https://cdn.simpleicons.org/whatsapp/25D366" class="w-3.5 h-3.5" alt="wa">
+            </a>
+            {% endif %}
           </div>
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-600 to-blue-700 flex items-center justify-center text-[11px] font-black">{{ m.home.abbreviation }}</div>
-          {% if m.home.whatsapp %}
-          <a href="https://wa.me/{{ m.home.whatsapp|cut:'+'|cut:' '|cut:'-' }}" target="_blank" class="w-6 h-6 rounded-full bg-[#25D366]/15 hover:bg-[#25D366]/25 flex items-center justify-center" title="WhatsApp">
-            <svg class="w-3.5 h-3.5 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.5 5.9L0 24l6.2-1.6c1.7.9 3.6 1.4 5.8 1.4 6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg>
-          </a>
-          {% endif %}
+          <div class="flex items-center gap-2 mt-1">
+            <div class="w-5 h-3.5 bg-gradient-to-r from-rose-600 to-orange-600 rounded-sm flex items-center justify-center text-[8px] font-bold">{{ m.away.abbreviation|slice:":2" }}</div>
+            <span class="text-[14px] {% if m.played and m.away_goals > m.home_goals %}font-bold text-white{% else %}text-white/90{% endif %} truncate">{{ m.away.name }}</span>
+            {% if m.away.whatsapp %}
+            <a href="https://wa.me/{{ m.away.whatsapp|cut:'+'|cut:' ' }}" target="_blank" class="opacity-0 group-hover:opacity-100 transition" title="{{ m.away.owner_username }}">
+              <img src="https://cdn.simpleicons.org/whatsapp/25D366" class="w-3.5 h-3.5" alt="wa">
+            </a>
+            {% endif %}
+          </div>
         </div>
 
-        <!-- Score -->
-        <div class="col-span-2 text-center">
+        <!-- SCORE ou VS -->
+        <div class="w-20 text-center">
           {% if m.played %}
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
-              <span class="text-xl font-black {% if m.home_goals > m.away_goals %}text-emerald-400{% endif %}">{{ m.home_goals }}</span>
-              <span class="text-white/30">:</span>
-              <span class="text-xl font-black {% if m.away_goals > m.home_goals %}text-emerald-400{% endif %}">{{ m.away_goals }}</span>
+            <div class="text-[15px] font-bold">
+              <span class="{% if m.home_goals > m.away_goals %}text-white{% else %}text-white/70{% endif %}">{{ m.home_goals }}</span>
+              <span class="text-white/30 mx-1">-</span>
+              <span class="{% if m.away_goals > m.home_goals %}text-white{% else %}text-white/70{% endif %}">{{ m.away_goals }}</span>
             </div>
           {% else %}
-            <span class="text-white/30 font-bold">VS</span>
+            <span class="text-xs text-white/40">-</span>
           {% endif %}
         </div>
 
-        <!-- Extérieur -->
-        <div class="col-span-3 flex items-center gap-2">
-          {% if m.away.whatsapp %}
-          <a href="https://wa.me/{{ m.away.whatsapp|cut:'+'|cut:' '|cut:'-' }}" target="_blank" class="w-6 h-6 rounded-full bg-[#25D366]/15 hover:bg-[#25D366]/25 flex items-center justify-center" title="WhatsApp">
-            <svg class="w-3.5 h-3.5 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.5 5.9L0 24l6.2-1.6c1.7.9 3.6 1.4 5.8 1.4 6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg>
-          </a>
+        <!-- ACTIONS -->
+        <div class="w-28 flex items-center justify-end gap-2">
+          {% if request.user.is_staff %}
+          <a href="{% url 'enter_result' m.id %}" class="px-2.5 py-1 bg-amber-500/20 text-amber-300 rounded text-[10px] font-bold hover:bg-amber-500/30">ENCODER</a>
+          {% else %}
+          <span class="px-2.5 py-1 bg-white/5 text-white/50 rounded text-[10px]">PREVIEW</span>
           {% endif %}
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-600 to-orange-600 flex items-center justify-center text-[11px] font-black">{{ m.away.abbreviation }}</div>
-          <div>
-            <div class="font-semibold text-[15px] leading-tight">{{ m.away.name }}</div>
-            <div class="text-[11px] text-white/40">@{{ m.away.owner_username }}</div>
-          </div>
-        </div>
-
-        <!-- Action -->
-        <div class="col-span-1 text-right">
-          <div class="flex items-center justify-end gap-1.5">
-            {% if request.user.is_staff or request.user.profile.is_manager %}
-              <a href="{% url 'enter_result' m.id %}" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-amber-500/20 flex items-center justify-center group" title="Encoder résultat">
-                <svg class="w-4 h-4 text-white/70 group-hover:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-              </a>
-            {% endif %}
-            {% if m.is_mine and not m.played %}
-              <span class="text-[10px] px-2 py-1 bg-amber-500/20 text-amber-300 rounded-full">{{ m.hours_left }}h</span>
-            {% endif %}
-          </div>
+          <button class="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center">
+            <svg class="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18v-8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2z"/></svg>
+          </button>
         </div>
       </div>
-      {% empty %}
-      <div class="py-16 text-center text-white/40">Aucun match</div>
       {% endfor %}
     </div>
-  </div>
-
-  <!-- MOBILE -->
-  <div class="md:hidden space-y-3" id="matches-list-mobile">
-    {% for m in matches %}
-    <div class="bg-[#0f172a] border border-white/10 rounded-xl p-4" data-mine="{% if m.is_mine %}1{% else %}0{% endif %}">
-      <div class="flex justify-between text-[11px] text-white/50 mb-2">
-        <span>Gr {{ m.group.name }}</span>
-        <div class="flex gap-2">
-          {% if request.user.is_staff %}<a href="{% url 'enter_result' m.id %}" class="text-amber-400">✏️</a>{% endif %}
-          <span>{% if m.played %}Terminé{% else %}À jouer{% endif %}</span>
-        </div>
-      </div>
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1.5">
-          <span class="font-bold text-sm">{{ m.home.abbreviation }}</span>
-          {% if m.home.whatsapp %}<a href="https://wa.me/{{ m.home.whatsapp|cut:'+' }}" target="_blank" class="text-[10px]">💬</a>{% endif %}
-        </div>
-        <div class="text-xl font-black px-3">{% if m.played %}{{ m.home_goals }}-{{ m.away_goals }}{% else %}VS{% endif %}</div>
-        <div class="flex items-center gap-1.5">
-          {% if m.away.whatsapp %}<a href="https://wa.me/{{ m.away.whatsapp|cut:'+' }}" target="_blank" class="text-[10px]">💬</a>{% endif %}
-          <span class="font-bold text-sm">{{ m.away.abbreviation }}</span>
-        </div>
-      </div>
-    {% endfor %}
   </div>
 </div>
 
 <script>
-function filterMatches(type){
-  document.querySelectorAll('[data-mine]').forEach(el=>{
-    el.style.display = (type==='all' || el.dataset.mine==='1')? '' : 'none';
+function filterStatus(type){
+  document.querySelectorAll('#matches-list > div').forEach(el=>{
+    const status = el.dataset.status;
+    el.style.display = (type==='all' || status===type)? '' : 'none';
   });
-  document.getElementById('btn-all').className = type==='all'? 'px-4 py-2 bg-white/10 rounded-xl text-sm font-medium' : 'px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm';
-  document.getElementById('btn-mine').className = type==='mine'? 'px-4 py-2 bg-amber-500/20 text-amber-400 rounded-xl text-sm font-medium' : 'px-4 py-2 bg-white/5 text-white/60 rounded-xl text-sm';
+  ['all','live','done','todo'].forEach(t=>{
+    const btn = document.getElementById('tab-'+t);
+    btn.className = t===type? 'px-4 py-1.5 bg-red-600 text-white rounded-lg text-sm font-bold' : 'px-4 py-1.5 bg-[#1e293b] text-white/60 rounded-lg text-sm';
+  });
 }
-filterMatches('all');
+filterStatus('all');
 </script>
 {% endblock %}

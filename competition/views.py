@@ -72,22 +72,34 @@ def team_register(request):
 from django.utils import timezone
 from datetime import timedelta
 
-def schedule(request):  # <-- renomme ici
+def schedule(request):
     t = Tournament.objects.first()
     now = timezone.now()
-    matches = Match.objects.filter(tournament=t).select_related('home','away').order_by('scheduled_at')
+    
+    # 1. On prend TOUS les matchs de poules, triés par groupe puis ID (J1, J2, J3)
+    matches = Match.objects.filter(
+        tournament=t,
+        phase='group'
+    ).select_related(
+        'home', 'away', 'group',
+        'home__owner', 'away__owner'
+    ).order_by('group__name', 'id')
 
     user_team = None
     if request.user.is_authenticated:
         user_team = Team.objects.filter(tournament=t, owner=request.user).first()
 
     for m in matches:
+        # 2. Deadline = 24h après création (si pas de scheduled_at)
         m.deadline = (m.scheduled_at or now) + timedelta(hours=24)
         m.hours_left = max(0, int((m.deadline - now).total_seconds() / 3600))
         m.is_late = now > m.deadline and not m.played
         m.is_mine = user_team and (m.home == user_team or m.away == user_team)
 
-    return render(request, 'competition/matches.html', {'matches': matches, 'user_team': user_team})  # <-- matches.html
+    return render(request, 'competition/matches.html', {
+        'matches': matches,
+        'user_team': user_team
+    })
 
 def standings(request):
     t = get_tournament()
@@ -537,21 +549,20 @@ def groups_view(request):
 
 
 
+from django.shortcuts import get_object_or_404
+
 @login_required
-@user_passes_test(is_manager)
 def enter_result(request, match_id):
+    if not request.user.is_staff: # seul toi
+        return redirect('schedule')
     match = get_object_or_404(Match, id=match_id)
     if request.method == 'POST':
-        match.home_goals = int(request.POST.get('home_goals', 0))
-        match.away_goals = int(request.POST.get('away_goals', 0))
+        match.home_goals = int(request.POST.get('home_goals',0))
+        match.away_goals = int(request.POST.get('away_goals',0))
         match.played = True
         match.save()
-        
-        # met à jour classement
-        update_standings(match.group)
-        messages.success(request, f"{match.home} {match.home_goals}-{match.away_goals} {match.away}")
-        return redirect('calendar')
-    return render(request, 'competition/manager/enter_result.html', {'match': match})
+        return redirect('schedule')
+    return render(request, 'competition/enter_result.html', {'m': match})
 
 def update_standings(group):
     teams = group.team_set.all()

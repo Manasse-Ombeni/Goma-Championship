@@ -35,5 +35,7 @@ urlpatterns = [
     path('manager/utilisateurs/', views.manager_users, name='manager_users'),path('manager/equipe/<int:pk>/force/', views.set_strength, name='set_strength'),
     path('manager/reset-tirage/', views.reset_draw, name='reset_draw'),
     path('groupes/', views.groups_view, name='groups'),
-    path('manager/match/<int:match_id>/resultat/', views.enter_result, name='enter_result'),
+    
+
+    path('match/<int:match_id>/resultat/', views.enter_result, name='enter_result'),
 ]
