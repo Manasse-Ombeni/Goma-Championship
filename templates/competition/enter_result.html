@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-xs mx-auto mt-20 p-6 bg-[#0f172a] rounded-2xl text-center">
+  <h2 class="font-bold mb-4">{{ m.home.name }} vs {{ m.away.name }}</h2>
+  <form method="post" class="flex justify-center gap-4">
+    {% csrf_token %}
+    <input name="hg" type="number" value="{{ m.home_goals|default:0 }}" class="w-16 h-12 text-2xl text-center bg-black/40 rounded">
+    <span class="self-center">-</span>
+    <input name="ag" type="number" value="{{ m.away_goals|default:0 }}" class="w-16 h-12 text-2xl text-center bg-black/40 rounded">
+  </form>
+  <button onclick="document.querySelector('form').submit()" class="mt-4 w-full py-2 bg-emerald-600 rounded font-bold">Valider</button>
+</div>
+{% endblock %}

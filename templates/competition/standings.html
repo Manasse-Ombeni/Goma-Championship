@@ -1,10 +1,38 @@
-{% extends 'base.html' %}{% block content %}
-<h2 class="text-3xl font-black mb-6">Classement</h2>
-{% for g,teams in data.items %}
-<h3 class="text-amber-400 font-bold mt-6 mb-2">Groupe {{g}}</h3>
-<table class="w-full text-sm bg-white/5 rounded-xl overflow-hidden">
-<tr class="text-white/50"><th class="text-left p-2">Équipe</th><th>Pts</th><th>J</th><th>Diff</th></tr>
-{% for t in teams %}<tr class="border-t border-white/10"><td class="p-2">{{t.name}}</td><td class="text-center">{{t.pts}}</td><td class="text-center">{{t.played}}</td><td class="text-center">{{t.gd}}</td></tr>{% endfor %}
-</table>
-{% endfor %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-xl mx-auto px-3 pb-20">
+  <h2 class="text-2xl font-black mb-4">Classement</h2>
+
+  {% for g, teams in data.items %}
+  <div class="mb-6">
+    <h3 class="font-bold mb-2 flex items-center gap-2">
+      <span class="w-1 h-5 bg-amber-500 rounded"></span>
+      GROUPE {{ g }}
+    </h3>
+
+    <div class="bg-[#0f172a] border border-white/10 rounded-2xl overflow-hidden">
+      <div class="grid grid-cols-12 text-[11px] text-white/40 px-3 py-2 border-b border-white/5">
+        <div class="col-span-6"># Équipe</div>
+        <div class="col-span-2 text-center">J</div>
+        <div class="col-span-2 text-center">Diff</div>
+        <div class="col-span-2 text-center font-bold text-white">Pts</div>
+      </div>
+
+      {% for t in teams %}
+      <div class="grid grid-cols-12 items-center px-3 py-2.5 {% if not forloop.last %}border-b border-white/5{% endif %}">
+        <div class="col-span-6 flex items-center gap-2">
+          <span class="w-5 text-xs text-white/50">{{ forloop.counter }}</span>
+          <span class="text-sm truncate">{{ t.name }}</span>
+        </div>
+        <div class="col-span-2 text-center text-xs">{{ t.played }}</div>
+        <div class="col-span-2 text-center text-xs">{{ t.gd }}</div>
+        <div class="col-span-2 text-center font-bold">{{ t.pts }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-center py-20 text-white/40">Aucun classement</div>
+  {% endfor %}
+</div>
 {% endblock %}

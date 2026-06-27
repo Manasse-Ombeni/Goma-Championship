@@ -10,6 +10,7 @@ from.models import Tournament, Team, Match, Group
 from .forms import TeamForm
 from django import forms
 
+
 def get_tournament():
     t, _ = Tournament.objects.get_or_create(pk=1, defaults={'name': 'Goma Efootball Championship'})
     return t
@@ -75,37 +76,70 @@ from datetime import timedelta
 def schedule(request):
     t = Tournament.objects.first()
     now = timezone.now()
-    
-    # 1. On prend TOUS les matchs de poules, triés par groupe puis ID (J1, J2, J3)
+
     matches = Match.objects.filter(
-        tournament=t,
-        phase='group'
-    ).select_related(
-        'home', 'away', 'group',
-        'home__owner', 'away__owner'
-    ).order_by('group__name', 'id')
+        tournament=t, phase='group'
+    ).select_related('home','away','group','home__owner','away__owner').order_by('group__name', 'id')
 
-    user_team = None
-    if request.user.is_authenticated:
-        user_team = Team.objects.filter(tournament=t, owner=request.user).first()
+    user_team = Team.objects.filter(tournament=t, owner=request.user).first() if request.user.is_authenticated else None
 
+    # regroupe par journée
+    matches_by_day = {'J1': [], 'J2': [], 'J3': []}
     for m in matches:
-        # 2. Deadline = 24h après création (si pas de scheduled_at)
         m.deadline = (m.scheduled_at or now) + timedelta(hours=24)
-        m.hours_left = max(0, int((m.deadline - now).total_seconds() / 3600))
-        m.is_late = now > m.deadline and not m.played
+        m.hours_left = max(0, int((m.deadline - now).total_seconds()/3600))
         m.is_mine = user_team and (m.home == user_team or m.away == user_team)
+        # J1 = matchs 1-2 du groupe, J2 = 3-4, J3 = 5-6
+        idx = list(matches.filter(group=m.group)).index(m)
+        if idx < 2: matches_by_day['J1'].append(m)
+        elif idx < 4: matches_by_day['J2'].append(m)
+        else: matches_by_day['J3'].append(m)
 
     return render(request, 'competition/matches.html', {
-        'matches': matches,
+        'days': matches_by_day,
         'user_team': user_team
     })
 
 def standings(request):
-    t = get_tournament()
+    t = Tournament.objects.first()
     groups = Group.objects.filter(tournament=t).order_by('name')
-    data = {g.name: Team.objects.filter(group=g, is_validated=True).order_by('-points','-goals_for','goals_against') for g in groups}
-    return render(request, 'competition/standings.html', {'data':data})
+
+    matches = Match.objects.filter(tournament=t, phase='group', played=True).select_related('home','away','group')
+
+    classement = {}
+    for g in groups:
+        # on prend les équipes via le FK inverse : team_set
+        teams = Team.objects.filter(group=g, tournament=t)
+        table = {team: {'pts':0,'j':0,'g':0,'n':0,'p':0,'bp':0,'bc':0} for team in teams}
+
+        for m in matches.filter(group=g):
+            th = table.get(m.home); ta = table.get(m.away)
+            if not th or not ta: continue
+            th['j'] += 1; ta['j'] += 1
+            th['bp'] += m.home_goals; th['bc'] += m.away_goals
+            ta['bp'] += m.away_goals; ta['bc'] += m.home_goals
+            if m.home_goals > m.away_goals:
+                th['pts'] += 3; th['g'] += 1; ta['p'] += 1
+            elif m.home_goals < m.away_goals:
+                ta['pts'] += 3; ta['g'] += 1; th['p'] += 1
+            else:
+                th['pts'] += 1; ta['pts'] += 1; th['n'] += 1; ta['n'] += 1
+
+        lst = []
+        for team, s in table.items():
+            # adapte au template que tu as donné
+            team.pts = s['pts']
+            team.played = s['j']
+            team.won = s['g']
+            team.drawn = s['n']
+            team.lost = s['p']
+            team.gd = s['bp'] - s['bc']
+            lst.append(team)
+        
+        lst.sort(key=lambda x: (-x.pts, -x.gd))
+        classement[g.name] = lst
+
+    return render(request, 'competition/standings.html', {'data': classement})
 
 def bracket(request):
     t = get_tournament()
@@ -549,20 +583,18 @@ def groups_view(request):
 
 
 
-from django.shortcuts import get_object_or_404
-
 @login_required
 def enter_result(request, match_id):
-    if not request.user.is_staff: # seul toi
+    if not request.user.is_staff:
         return redirect('schedule')
-    match = get_object_or_404(Match, id=match_id)
+    m = get_object_or_404(Match, id=match_id)
     if request.method == 'POST':
-        match.home_goals = int(request.POST.get('home_goals',0))
-        match.away_goals = int(request.POST.get('away_goals',0))
-        match.played = True
-        match.save()
+        m.home_goals = int(request.POST.get('hg', 0))
+        m.away_goals = int(request.POST.get('ag', 0))
+        m.played = True
+        m.save()
         return redirect('schedule')
-    return render(request, 'competition/enter_result.html', {'m': match})
+    return render(request, 'competition/enter_result.html', {'m': m})
 
 def update_standings(group):
     teams = group.team_set.all()
