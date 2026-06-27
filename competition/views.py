@@ -9,6 +9,9 @@ from django.contrib import messages
 from.models import Tournament, Team, Match, Group
 from .forms import TeamForm
 from django import forms
+from django.utils import timezone
+from datetime import timedelta, time
+import pytz
 
 
 def get_tournament():
@@ -79,25 +82,82 @@ def schedule(request):
 
     matches = Match.objects.filter(
         tournament=t, phase='group'
-    ).select_related('home','away','group','home__owner','away__owner').order_by('group__name', 'id')
+    ).select_related(
+        'home', 'away', 'group', 'home__owner', 'away__owner'
+    ).order_by('scheduled_at', 'group__name', 'id')
 
-    user_team = Team.objects.filter(tournament=t, owner=request.user).first() if request.user.is_authenticated else None
+    user_team = (
+        Team.objects.filter(tournament=t, owner=request.user).first()
+        if request.user.is_authenticated else None
+    )
 
-    # regroupe par journée
+    # ── Regroupement par journée via scheduled_at ────────────────
+    # On détermine J1/J2/J3 selon la date du scheduled_at
     matches_by_day = {'J1': [], 'J2': [], 'J3': []}
+
+    # Récupère les dates uniques triées pour identifier J1, J2, J3
+    dates_uniques = sorted(set(
+        m.scheduled_at.date()
+        for m in matches
+        if m.scheduled_at
+    ))
+
+    # Associe chaque date à une journée
+    date_to_day = {}
+    labels = ['J1', 'J2', 'J3']
+    for i, date in enumerate(dates_uniques[:3]):
+        date_to_day[date] = labels[i]
+
     for m in matches:
-        m.deadline = (m.scheduled_at or now) + timedelta(hours=24)
-        m.hours_left = max(0, int((m.deadline - now).total_seconds()/3600))
+        # ── Compte à rebours ────────────────────────────────────
+        if m.played:
+            m.hours_left = 0
+            m.minutes_left = 0
+            m.countdown_label = "Terminé"
+        elif m.scheduled_at:
+            delta = m.scheduled_at - now
+            total_seconds = max(0, int(delta.total_seconds()))
+            m.hours_left = total_seconds // 3600
+            m.minutes_left = (total_seconds % 3600) // 60
+            m.countdown_ts = int(m.scheduled_at.timestamp())  # pour JS
+
+            if total_seconds <= 0:
+                m.countdown_label = "Temps écoulé"
+            elif m.hours_left < 1:
+                m.countdown_label = f"{m.minutes_left}min"
+            else:
+                m.countdown_label = f"{m.hours_left}h {m.minutes_left:02d}min"
+        else:
+            m.hours_left = 0
+            m.minutes_left = 0
+            m.countdown_label = "À planifier"
+            m.countdown_ts = None
+
         m.is_mine = user_team and (m.home == user_team or m.away == user_team)
-        # J1 = matchs 1-2 du groupe, J2 = 3-4, J3 = 5-6
-        idx = list(matches.filter(group=m.group)).index(m)
-        if idx < 2: matches_by_day['J1'].append(m)
-        elif idx < 4: matches_by_day['J2'].append(m)
-        else: matches_by_day['J3'].append(m)
+
+        # ── Affectation à la bonne journée ──────────────────────
+        if m.scheduled_at:
+            day_label = date_to_day.get(m.scheduled_at.date())
+            if day_label:
+                matches_by_day[day_label].append(m)
+        else:
+            # Fallback : répartition par index si pas de date
+            # (ancien système, au cas où)
+            group_matches = list(matches.filter(group=m.group))
+            try:
+                idx = group_matches.index(m)
+                if idx < 2:
+                    matches_by_day['J1'].append(m)
+                elif idx < 4:
+                    matches_by_day['J2'].append(m)
+                else:
+                    matches_by_day['J3'].append(m)
+            except ValueError:
+                matches_by_day['J1'].append(m)
 
     return render(request, 'competition/matches.html', {
         'days': matches_by_day,
-        'user_team': user_team
+        'user_team': user_team,
     })
 
 def standings(request):
@@ -322,34 +382,78 @@ def generate_draw(request):
     messages.success(request, "✅ Tirage équilibré : 8 groupes de 4")
     return redirect('manager')
 
+
 @login_required
 @user_passes_test(is_manager)
 def generate_schedule(request):
     t = get_tournament()
-    # nettoie d'abord
+
+    # ── Sauvegarde les résultats déjà joués ─────────────────────
+    resultats_joues = {}
+    for m in Match.objects.filter(tournament=t, phase='group', played=True):
+        # Clé unique : groupe + home + away
+        key = (m.group_id, m.home_id, m.away_id)
+        resultats_joues[key] = {
+            'home_goals': m.home_goals,
+            'away_goals': m.away_goals,
+        }
+
+    # ── Supprime les anciens matchs de poule ────────────────────
     Match.objects.filter(tournament=t, phase='group').delete()
 
+    # ── Calcule les deadlines par journée ───────────────────────
+    now_local = timezone.localtime(timezone.now())
+
+    today_midnight = now_local.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+    deadlines = {
+        'J1': today_midnight + timedelta(hours=23, minutes=59),
+        'J2': today_midnight + timedelta(days=1, hours=23, minutes=59),
+        'J3': today_midnight + timedelta(days=2, hours=23, minutes=59),
+    }
+
+    # ── Recrée les matchs avec les bonnes dates ──────────────────
     for group in Group.objects.filter(tournament=t):
         teams = list(group.team_set.all())
-        if len(teams)!= 4:
+        if len(teams) != 4:
             continue
 
-        # 3 journées round-robin
-        fixtures = [(0,1,2,3), (0,2,1,3), (0,3,1,2)]
-        for a,b,c,d in fixtures:
-            Match.objects.create(
-                tournament=t, group=group,
-                home=teams[a], away=teams[b],
-                phase='group', played=False
-            )
-            Match.objects.create(
-                tournament=t, group=group,
-                home=teams[c], away=teams[d],
-                phase='group', played=False
-            )
+        fixtures = [
+            ('J1', [(0, 1), (2, 3)]),
+            ('J2', [(0, 2), (1, 3)]),
+            ('J3', [(0, 3), (1, 2)]),
+        ]
 
-    messages.success(request, "📅 Calendrier généré : 48 matchs de poules")
+        for day_label, pairs in fixtures:
+            for a, b in pairs:
+                home = teams[a]
+                away = teams[b]
+                key = (group.id, home.id, away.id)
+
+                # Restaure le résultat s'il existait
+                ancien = resultats_joues.get(key, {})
+                played = bool(ancien)
+
+                Match.objects.create(
+                    tournament=t,
+                    group=group,
+                    home=home,
+                    away=away,
+                    phase='group',
+                    played=played,
+                    home_goals=ancien.get('home_goals'),
+                    away_goals=ancien.get('away_goals'),
+                    scheduled_at=deadlines[day_label],
+                )
+
+    messages.success(
+        request,
+        "📅 Calendrier régénéré avec les dates J1/J2/J3 — résultats conservés ✅"
+    )
     return redirect('manager')
+
 
 @login_required
 @user_passes_test(is_manager)
