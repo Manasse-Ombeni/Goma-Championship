@@ -11,7 +11,7 @@ from .forms import TeamForm
 from django import forms
 from django.utils import timezone
 from datetime import timedelta, time
-import pytz
+
 
 
 def get_tournament():
@@ -391,30 +391,31 @@ def generate_schedule(request):
     # ── Sauvegarde les résultats déjà joués ─────────────────────
     resultats_joues = {}
     for m in Match.objects.filter(tournament=t, phase='group', played=True):
-        # Clé unique : groupe + home + away
         key = (m.group_id, m.home_id, m.away_id)
         resultats_joues[key] = {
             'home_goals': m.home_goals,
             'away_goals': m.away_goals,
         }
 
-    # ── Supprime les anciens matchs de poule ────────────────────
+    # ── Supprime les anciens matchs ──────────────────────────────
     Match.objects.filter(tournament=t, phase='group').delete()
 
-    # ── Calcule les deadlines par journée ───────────────────────
-    now_local = timezone.localtime(timezone.now())
+    # ── Calcule les deadlines ────────────────────────────────────
+    # Sans pytz — compatible Render (UTC) et local
+    now_utc = timezone.now()
 
-    today_midnight = now_local.replace(
+    today_midnight_utc = now_utc.replace(
         hour=0, minute=0, second=0, microsecond=0
     )
 
+    # Goma = UTC+2 → 23h59 local = 21h59 UTC
     deadlines = {
-        'J1': today_midnight + timedelta(hours=23, minutes=59),
-        'J2': today_midnight + timedelta(days=1, hours=23, minutes=59),
-        'J3': today_midnight + timedelta(days=2, hours=23, minutes=59),
+        'J1': today_midnight_utc + timedelta(hours=21, minutes=59),
+        'J2': today_midnight_utc + timedelta(days=1, hours=21, minutes=59),
+        'J3': today_midnight_utc + timedelta(days=2, hours=21, minutes=59),
     }
 
-    # ── Recrée les matchs avec les bonnes dates ──────────────────
+    # ── Recrée les matchs ────────────────────────────────────────
     for group in Group.objects.filter(tournament=t):
         teams = list(group.team_set.all())
         if len(teams) != 4:
@@ -431,8 +432,6 @@ def generate_schedule(request):
                 home = teams[a]
                 away = teams[b]
                 key = (group.id, home.id, away.id)
-
-                # Restaure le résultat s'il existait
                 ancien = resultats_joues.get(key, {})
                 played = bool(ancien)
 
@@ -450,7 +449,7 @@ def generate_schedule(request):
 
     messages.success(
         request,
-        "📅 Calendrier régénéré avec les dates J1/J2/J3 — résultats conservés ✅"
+        "📅 Calendrier régénéré — J1/J2/J3 sur 3 jours ✅"
     )
     return redirect('manager')
 
