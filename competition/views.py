@@ -690,14 +690,88 @@ def groups_view(request):
 def enter_result(request, match_id):
     if not request.user.is_staff:
         return redirect('schedule')
+
     m = get_object_or_404(Match, id=match_id)
+    is_knockout = m.phase != 'group'
+
     if request.method == 'POST':
-        m.home_goals = int(request.POST.get('hg', 0))
-        m.away_goals = int(request.POST.get('ag', 0))
-        m.played = True
-        m.save()
-        return redirect('schedule')
-    return render(request, 'competition/enter_result.html', {'m': m})
+        if is_knockout:
+            # ── Phase éliminatoire ──────────────────────────────
+            hg = int(request.POST.get('hg', 0))
+            ag = int(request.POST.get('ag', 0))
+            et = request.POST.get('extra_time') == 'on'
+            hget = int(request.POST.get('home_goals_et') or 0)
+            aget = int(request.POST.get('away_goals_et') or 0)
+            tab = request.POST.get('penalty_shootout') == 'on'
+            hp = int(request.POST.get('home_penalties') or 0)
+            ap = int(request.POST.get('away_penalties') or 0)
+
+            m.home_goals = hg
+            m.away_goals = ag
+            m.extra_time = et
+            m.home_goals_et = hget if et else None
+            m.away_goals_et = aget if et else None
+            m.penalty_shootout = tab
+            m.home_penalties = hp if tab else None
+            m.away_penalties = ap if tab else None
+            m.played = True
+            m.save()
+
+            # ── Avancement automatique ──────────────────────────
+            winner = m.winner
+            loser = m.loser
+            t = m.tournament
+
+            if winner and m.phase in ['R16', 'QF', 'SF']:
+                r16 = list(Match.objects.filter(tournament=t, phase='R16').order_by('id'))
+                qf  = list(Match.objects.filter(tournament=t, phase='QF').order_by('id'))
+                sf  = list(Match.objects.filter(tournament=t, phase='SF').order_by('id'))
+                final = Match.objects.filter(tournament=t, phase='F').first()
+                third = Match.objects.filter(tournament=t, phase='3P').first()
+
+                if m.phase == 'R16':
+                    idx = r16.index(m)
+                    target = qf[idx // 2]
+                    if idx % 2 == 0:
+                        target.home = winner
+                    else:
+                        target.away = winner
+                    target.save()
+
+                elif m.phase == 'QF':
+                    idx = qf.index(m)
+                    target = sf[idx // 2]
+                    if idx % 2 == 0:
+                        target.home = winner
+                    else:
+                        target.away = winner
+                    target.save()
+
+                elif m.phase == 'SF':
+                    idx = sf.index(m)
+                    if idx == 0:
+                        final.home = winner
+                        if third: third.home = loser
+                    else:
+                        final.away = winner
+                        if third: third.away = loser
+                    final.save()
+                    if third: third.save()
+
+            return redirect('bracket')
+
+        else:
+            # ── Phase de groupes (ancien système) ──────────────
+            m.home_goals = int(request.POST.get('hg', 0))
+            m.away_goals = int(request.POST.get('ag', 0))
+            m.played = True
+            m.save()
+            return redirect('schedule')
+
+    return render(request, 'competition/enter_result.html', {
+        'm': m,
+        'is_knockout': is_knockout,
+    })
 
 def update_standings(group):
     teams = group.team_set.all()

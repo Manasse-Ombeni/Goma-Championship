@@ -1,7 +1,7 @@
 import re
 from django import forms
 from django.contrib.auth.models import User
-from .models import Team
+from .models import Team, Match  # ← AJOUTER Match ici
 
 class TeamForm(forms.ModelForm):
     owner_username = forms.CharField(
@@ -77,3 +77,51 @@ class TeamForm(forms.ModelForm):
         if password and len(password) < 6:
             raise forms.ValidationError("Minimum 6 caractères")
         return password
+
+
+
+
+class KnockoutResultForm(forms.ModelForm):
+    """Formulaire pour encoder un match éliminatoire avec prolongations/TAB"""
+
+    class Meta:
+        model = Match
+        fields = [
+            'home_goals', 'away_goals',
+            'extra_time', 'home_goals_et', 'away_goals_et',
+            'penalty_shootout', 'home_penalties', 'away_penalties',
+        ]
+        widgets = {
+            'home_goals': forms.NumberInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10 text-center text-2xl font-black',
+                'min': '0', 'placeholder': '0'
+            }),
+            'away_goals': forms.NumberInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10 text-center text-2xl font-black',
+                'min': '0', 'placeholder': '0'
+            }),
+            'home_goals_et': forms.NumberInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10 text-center',
+                'min': '0', 'placeholder': '0'
+            }),
+            'away_goals_et': forms.NumberInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10 text-center',
+                'min': '0', 'placeholder': '0'
+            }),
+            'home_penalties': forms.NumberInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10 text-center',
+                'min': '0', 'placeholder': '0'
+            }),
+            'away_penalties': forms.NumberInput(attrs={
+                'class': 'w-full p-3 bg-black/30 rounded-xl border border-white/10 text-center',
+                'min': '0', 'placeholder': '0'
+            }),
+            'extra_time': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 rounded',
+                'id': 'id_extra_time'
+            }),
+            'penalty_shootout': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 rounded',
+                'id': 'id_penalty_shootout'
+            }),
+        }

@@ -1,40 +1,1071 @@
-{% extends 'base.html' %}{% block content %}
-<div class="max-w-7xl mx-auto">
-  <h1 class="text-3xl font-black mb-8 text-center">Phase Éliminatoire</h1>
-  <div class="grid lg:grid-cols-5 gap-4 text-sm">
-    <!-- Huitièmes -->
-    <div>
-      <h3 class="font-bold mb-3 text-amber-400 uppercase">Huitièmes</h3>
-      {% for m in r16 %}
-      <div class="p-2 bg-[#0f172a] rounded-lg mb-2 border border-white/10">
-        {{ m.home.name|default:"?" }} <span class="text-white/40">vs</span> {{ m.away.name|default:"?" }}
-      </div>
-      {% empty %}<p class="text-white/40">En attente</p>{% endfor %}
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-2 pb-24">
+
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-black tracking-tight">
+            🏆 Phase
+            <span class="text-transparent bg-clip-text
+                         bg-gradient-to-r from-amber-400 to-orange-500">
+                Éliminatoire
+            </span>
+        </h1>
+        <p class="text-white/40 text-sm mt-2">
+            Format Coupe du Monde — 32 équipes
+        </p>
     </div>
-    <!-- Quarts -->
-    <div>
-      <h3 class="font-bold mb-3 text-orange-400 uppercase">Quarts</h3>
-      {% for m in qf %}<div class="p-2 bg-[#0f172a] rounded-lg mb-2">{{ m.home.name|default:"Vainq R16-1" }} vs {{ m.away.name|default:"Vainq R16-2" }}</div>{% endfor %}
+
+    <!-- ═══════════════════════════════════════
+         VUE DESKTOP — Bracket horizontal
+    ═══════════════════════════════════════ -->
+    <div class="hidden md:block overflow-x-auto pb-4">
+    <div class="min-w-[1100px] px-2">
+
+        <!-- Labels des colonnes -->
+        <div class="grid grid-cols-9 gap-2 mb-3 text-center">
+            <div class="col-span-2">
+                <span class="text-[11px] font-black uppercase tracking-widest
+                             text-amber-400 bg-amber-400/10 px-3 py-1
+                             rounded-full border border-amber-400/20">
+                    Huitièmes
+                </span>
+            </div>
+            <div>
+                <span class="text-[11px] font-black uppercase tracking-widest
+                             text-orange-400 bg-orange-400/10 px-3 py-1
+                             rounded-full border border-orange-400/20">
+                    Quarts
+                </span>
+            </div>
+            <div>
+                <span class="text-[11px] font-black uppercase tracking-widest
+                             text-sky-400 bg-sky-400/10 px-3 py-1
+                             rounded-full border border-sky-400/20">
+                    Demis
+                </span>
+            </div>
+            <div>
+                <span class="text-[11px] font-black uppercase tracking-widest
+                             text-emerald-400 bg-emerald-400/10 px-3 py-1
+                             rounded-full border border-emerald-400/20">
+                    🏆 Finale
+                </span>
+            </div>
+            <div>
+                <span class="text-[11px] font-black uppercase tracking-widest
+                             text-sky-400 bg-sky-400/10 px-3 py-1
+                             rounded-full border border-sky-400/20">
+                    Demis
+                </span>
+            </div>
+            <div>
+                <span class="text-[11px] font-black uppercase tracking-widest
+                             text-orange-400 bg-orange-400/10 px-3 py-1
+                             rounded-full border border-orange-400/20">
+                    Quarts
+                </span>
+            </div>
+            <div class="col-span-2">
+                <span class="text-[11px] font-black uppercase tracking-widest
+                             text-amber-400 bg-amber-400/10 px-3 py-1
+                             rounded-full border border-amber-400/20">
+                    Huitièmes
+                </span>
+            </div>
+        </div>
+
+        <!-- Bracket principal -->
+        <div class="grid grid-cols-9 gap-2 items-center">
+
+            <!-- ══ COL 1-2 : R16 Gauche (matchs 1-4) ══ -->
+            <div class="col-span-2 space-y-2">
+                {% for m in r16 %}{% if forloop.counter <= 4 %}
+
+                <div class="bg-gradient-to-br from-[#0f172a] to-[#0a0f1e]
+                            border border-white/10 rounded-xl overflow-hidden
+                            hover:border-amber-400/30 transition-all duration-200">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-2.5 py-1.5
+                                bg-white/3 border-b border-white/5">
+                        <span class="text-[9px] font-bold text-amber-400/70 uppercase tracking-widest">
+                            R16 · {{ forloop.counter }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-[9px] text-white/30 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif m.scheduled_at %}
+                        <span class="text-[9px] text-amber-400/70 countdown-badge"
+                              data-deadline="{{ m.scheduled_at|date:'U' }}">⏱</span>
+                        {% else %}
+                        <span class="text-[9px] text-white/20">À venir</span>
+                        {% endif %}
+                    </div>
+                    <!-- Home -->
+                    <div class="flex items-center justify-between px-2.5 pt-2 pb-1 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"?" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.home_goals > m.away_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ m.home_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-2.5 border-t border-white/5"></div>
+                    <!-- Away -->
+                    <div class="flex items-center justify-between px-2.5 pt-1 pb-2 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"?" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.away_goals > m.home_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ m.away_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_staff and not m.played and m.home and m.away %}
+                    <div class="px-2.5 pb-2">
+                        <a href="{% url 'enter_result' m.id %}"
+                           class="block text-center text-[9px] font-bold
+                                  text-amber-400/70 hover:text-amber-400
+                                  py-1 rounded-lg border border-amber-400/10
+                                  hover:border-amber-400/30 transition-colors">
+                            ✏️ Résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% endif %}{% endfor %}
+            </div>
+
+            <!-- ══ COL 3 : QF Gauche (matchs 1-2) ══ -->
+            <div class="space-y-2">
+                <div class="space-y-16">
+                {% for m in qf %}{% if forloop.counter <= 2 %}
+
+                <div class="bg-gradient-to-br from-[#0f172a] to-[#0a0f1e]
+                            border border-white/10 rounded-xl overflow-hidden
+                            hover:border-orange-400/30 transition-all duration-200">
+                    <div class="flex items-center justify-between px-2.5 py-1.5
+                                bg-white/3 border-b border-white/5">
+                        <span class="text-[9px] font-bold text-orange-400/70 uppercase tracking-widest">
+                            QF · {{ forloop.counter }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-[9px] text-white/30 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif m.scheduled_at %}
+                        <span class="text-[9px] text-orange-400/70 countdown-badge"
+                              data-deadline="{{ m.scheduled_at|date:'U' }}">⏱</span>
+                        {% else %}
+                        <span class="text-[9px] text-white/20">À venir</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between px-2.5 pt-2 pb-1 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"Vainq. R16" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.home_goals > m.away_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ m.home_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-2.5 border-t border-white/5"></div>
+                    <div class="flex items-center justify-between px-2.5 pt-1 pb-2 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"Vainq. R16" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.away_goals > m.home_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ m.away_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_staff and not m.played and m.home and m.away %}
+                    <div class="px-2.5 pb-2">
+                        <a href="{% url 'enter_result' m.id %}"
+                           class="block text-center text-[9px] font-bold
+                                  text-orange-400/70 hover:text-orange-400
+                                  py-1 rounded-lg border border-orange-400/10
+                                  hover:border-orange-400/30 transition-colors">
+                            ✏️ Résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% endif %}{% endfor %}
+                </div>
+            </div>
+
+            <!-- ══ COL 4 : SF Gauche (match 1) ══ -->
+            <div>
+                {% for m in sf %}{% if forloop.counter == 1 %}
+                <div class="bg-gradient-to-br from-[#0f172a] to-[#0a0f1e]
+                            border border-sky-400/20 rounded-xl overflow-hidden
+                            hover:border-sky-400/40 transition-all duration-200">
+                    <div class="flex items-center justify-between px-2.5 py-1.5
+                                bg-sky-400/5 border-b border-sky-400/10">
+                        <span class="text-[9px] font-bold text-sky-400/70 uppercase tracking-widest">
+                            Demi 1
+                        </span>
+                        {% if m.played %}
+                        <span class="text-[9px] text-white/30 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif m.scheduled_at %}
+                        <span class="text-[9px] text-sky-400/70 countdown-badge"
+                              data-deadline="{{ m.scheduled_at|date:'U' }}">⏱</span>
+                        {% else %}
+                        <span class="text-[9px] text-white/20">À venir</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between px-2.5 pt-2 pb-1 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"Vainq. QF" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.home_goals > m.away_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.home_goals }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-2.5 border-t border-white/5"></div>
+                    <div class="flex items-center justify-between px-2.5 pt-1 pb-2 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"Vainq. QF" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.away_goals > m.home_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.away_goals }}</span>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_staff and not m.played and m.home and m.away %}
+                    <div class="px-2.5 pb-2">
+                        <a href="{% url 'enter_result' m.id %}"
+                           class="block text-center text-[9px] font-bold text-sky-400/70
+                                  hover:text-sky-400 py-1 rounded-lg border
+                                  border-sky-400/10 hover:border-sky-400/30 transition-colors">
+                            ✏️ Résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+
+            <!-- ══ COL 5 : FINALE + 3ème place ══ -->
+            <div class="flex flex-col gap-4">
+
+                <!-- Finale -->
+                {% if final %}
+                <div class="relative bg-gradient-to-br from-amber-500/20 to-orange-600/15
+                            border-2 border-amber-500/50 rounded-2xl overflow-hidden
+                            shadow-xl shadow-amber-500/20">
+                    <div class="absolute top-1 right-2 text-amber-400/20 text-2xl
+                                pointer-events-none">★</div>
+                    <div class="flex items-center justify-between px-3 py-2
+                                bg-amber-500/10 border-b border-amber-500/20">
+                        <span class="text-[10px] font-black text-amber-400
+                                     uppercase tracking-widest">
+                            🏆 Grande Finale
+                        </span>
+                        {% if final.played %}
+                        <span class="text-[9px] text-white/40 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif final.scheduled_at %}
+                        <span class="text-[9px] text-amber-400 countdown-badge"
+                              data-deadline="{{ final.scheduled_at|date:'U' }}">⏱</span>
+                        {% endif %}
+                    </div>
+                    <!-- Home -->
+                    <div class="flex items-center justify-between px-3 pt-3 pb-1.5 gap-2">
+                        <span class="text-sm font-black truncate flex-1
+                            {% if final.played and final.home_goals > final.away_goals %}
+                                text-amber-400
+                            {% elif final.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ final.home.name|default:"?" }}
+                        </span>
+                        {% if final.played %}
+                        <span class="text-xl font-black flex-shrink-0
+                            {% if final.home_goals > final.away_goals %}text-amber-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ final.home_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-3 border-t border-white/10"></div>
+                    <!-- Away -->
+                    <div class="flex items-center justify-between px-3 pt-1.5 pb-3 gap-2">
+                        <span class="text-sm font-black truncate flex-1
+                            {% if final.played and final.away_goals > final.home_goals %}
+                                text-amber-400
+                            {% elif final.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ final.away.name|default:"?" }}
+                        </span>
+                        {% if final.played %}
+                        <span class="text-xl font-black flex-shrink-0
+                            {% if final.away_goals > final.home_goals %}text-amber-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ final.away_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <!-- Champion badge -->
+                    {% if final.played %}
+                    <div class="px-3 pb-3">
+                        <div class="bg-gradient-to-r from-amber-500 to-orange-500
+                                    rounded-xl py-2 text-center">
+                            <div class="text-[9px] font-bold text-black/60
+                                        uppercase tracking-widest">
+                                🏆 Champion
+                            </div>
+                            <div class="text-sm font-black text-black">
+                                {% if final.home_goals > final.away_goals %}
+                                    {{ final.home.name }}
+                                {% else %}
+                                    {{ final.away.name }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% elif final.scheduled_at %}
+                    <div class="px-3 pb-2 text-center">
+                        <span class="text-[10px] text-white/30">
+                            {{ final.scheduled_at|date:"d/m/Y" }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    {% if request.user.is_staff and not final.played and final.home and final.away %}
+                    <div class="px-3 pb-3">
+                        <a href="{% url 'enter_result' final.id %}"
+                           class="block text-center text-[10px] font-bold
+                                  text-amber-400 bg-amber-400/10 hover:bg-amber-400/20
+                                  py-1.5 rounded-lg border border-amber-400/20
+                                  transition-colors">
+                            ✏️ Saisir résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="border-2 border-dashed border-white/10 rounded-2xl
+                            p-6 text-center text-white/20 text-xs">
+                    🏆 Finale
+                </div>
+                {% endif %}
+
+                <!-- 3ème place -->
+                {% if third %}
+                <div class="bg-gradient-to-br from-purple-500/10 to-purple-900/5
+                            border border-purple-500/30 rounded-xl overflow-hidden">
+                    <div class="flex items-center justify-between px-3 py-1.5
+                                bg-purple-500/10 border-b border-purple-500/20">
+                        <span class="text-[10px] font-black text-purple-400
+                                     uppercase tracking-widest">
+                            🥉 3ème place
+                        </span>
+                        {% if third.played %}
+                        <span class="text-[9px] text-white/30 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif third.scheduled_at %}
+                        <span class="text-[9px] text-purple-400 countdown-badge"
+                              data-deadline="{{ third.scheduled_at|date:'U' }}">⏱</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between px-3 pt-2 pb-1 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if third.played and third.home_goals > third.away_goals %}
+                                text-purple-400
+                            {% elif third.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ third.home.name|default:"Perdant D1" }}
+                        </span>
+                        {% if third.played %}
+                        <span class="text-sm font-black
+                            {% if third.home_goals > third.away_goals %}text-purple-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ third.home_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-3 border-t border-white/5"></div>
+                    <div class="flex items-center justify-between px-3 pt-1 pb-2 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if third.played and third.away_goals > third.home_goals %}
+                                text-purple-400
+                            {% elif third.played %}text-white/40
+                            {% else %}text-white{% endif %}">
+                            {{ third.away.name|default:"Perdant D2" }}
+                        </span>
+                        {% if third.played %}
+                        <span class="text-sm font-black
+                            {% if third.away_goals > third.home_goals %}text-purple-400
+                            {% else %}text-white/30{% endif %}">
+                            {{ third.away_goals }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_staff and not third.played and third.home and third.away %}
+                    <div class="px-3 pb-2">
+                        <a href="{% url 'enter_result' third.id %}"
+                           class="block text-center text-[9px] font-bold
+                                  text-purple-400/70 hover:text-purple-400
+                                  py-1 rounded-lg border border-purple-400/10
+                                  hover:border-purple-400/30 transition-colors">
+                            ✏️ Résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- ══ COL 6 : SF Droite (match 2) ══ -->
+            <div>
+                {% for m in sf %}{% if forloop.counter == 2 %}
+                <div class="bg-gradient-to-br from-[#0f172a] to-[#0a0f1e]
+                            border border-sky-400/20 rounded-xl overflow-hidden
+                            hover:border-sky-400/40 transition-all duration-200">
+                    <div class="flex items-center justify-between px-2.5 py-1.5
+                                bg-sky-400/5 border-b border-sky-400/10">
+                        <span class="text-[9px] font-bold text-sky-400/70
+                                     uppercase tracking-widest">Demi 2</span>
+                        {% if m.played %}
+                        <span class="text-[9px] text-white/30 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif m.scheduled_at %}
+                        <span class="text-[9px] text-sky-400/70 countdown-badge"
+                              data-deadline="{{ m.scheduled_at|date:'U' }}">⏱</span>
+                        {% else %}
+                        <span class="text-[9px] text-white/20">À venir</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between px-2.5 pt-2 pb-1 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"Vainq. QF" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.home_goals > m.away_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.home_goals }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-2.5 border-t border-white/5"></div>
+                    <div class="flex items-center justify-between px-2.5 pt-1 pb-2 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"Vainq. QF" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.away_goals > m.home_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.away_goals }}</span>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_staff and not m.played and m.home and m.away %}
+                    <div class="px-2.5 pb-2">
+                        <a href="{% url 'enter_result' m.id %}"
+                           class="block text-center text-[9px] font-bold text-sky-400/70
+                                  hover:text-sky-400 py-1 rounded-lg border
+                                  border-sky-400/10 hover:border-sky-400/30 transition-colors">
+                            ✏️ Résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+
+            <!-- ══ COL 7 : QF Droite (matchs 3-4) ══ -->
+            <div class="space-y-2">
+                <div class="space-y-16">
+                {% for m in qf %}{% if forloop.counter > 2 %}
+
+                <div class="bg-gradient-to-br from-[#0f172a] to-[#0a0f1e]
+                            border border-white/10 rounded-xl overflow-hidden
+                            hover:border-orange-400/30 transition-all duration-200">
+                    <div class="flex items-center justify-between px-2.5 py-1.5
+                                bg-white/3 border-b border-white/5">
+                        <span class="text-[9px] font-bold text-orange-400/70
+                                     uppercase tracking-widest">
+                            QF · {{ forloop.counter }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-[9px] text-white/30 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif m.scheduled_at %}
+                        <span class="text-[9px] text-orange-400/70 countdown-badge"
+                              data-deadline="{{ m.scheduled_at|date:'U' }}">⏱</span>
+                        {% else %}
+                        <span class="text-[9px] text-white/20">À venir</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between px-2.5 pt-2 pb-1 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"Vainq. R16" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.home_goals > m.away_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.home_goals }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-2.5 border-t border-white/5"></div>
+                    <div class="flex items-center justify-between px-2.5 pt-1 pb-2 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"Vainq. R16" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.away_goals > m.home_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.away_goals }}</span>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_staff and not m.played and m.home and m.away %}
+                    <div class="px-2.5 pb-2">
+                        <a href="{% url 'enter_result' m.id %}"
+                           class="block text-center text-[9px] font-bold
+                                  text-orange-400/70 hover:text-orange-400
+                                  py-1 rounded-lg border border-orange-400/10
+                                  hover:border-orange-400/30 transition-colors">
+                            ✏️ Résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% endif %}{% endfor %}
+                </div>
+            </div>
+
+            <!-- ══ COL 8-9 : R16 Droite (matchs 5-8) ══ -->
+            <div class="col-span-2 space-y-2">
+                {% for m in r16 %}{% if forloop.counter > 4 %}
+
+                <div class="bg-gradient-to-br from-[#0f172a] to-[#0a0f1e]
+                            border border-white/10 rounded-xl overflow-hidden
+                            hover:border-amber-400/30 transition-all duration-200">
+                    <div class="flex items-center justify-between px-2.5 py-1.5
+                                bg-white/3 border-b border-white/5">
+                        <span class="text-[9px] font-bold text-amber-400/70
+                                     uppercase tracking-widest">
+                            R16 · {{ forloop.counter }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-[9px] text-white/30 bg-white/5
+                                     px-1.5 py-0.5 rounded-full">FT</span>
+                        {% elif m.scheduled_at %}
+                        <span class="text-[9px] text-amber-400/70 countdown-badge"
+                              data-deadline="{{ m.scheduled_at|date:'U' }}">⏱</span>
+                        {% else %}
+                        <span class="text-[9px] text-white/20">À venir</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between px-2.5 pt-2 pb-1 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"?" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.home_goals > m.away_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.home_goals }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="mx-2.5 border-t border-white/5"></div>
+                    <div class="flex items-center justify-between px-2.5 pt-1 pb-2 gap-1">
+                        <span class="text-xs font-bold truncate flex-1
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/40{% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"?" }}
+                        </span>
+                        {% if m.played %}
+                        <span class="text-sm font-black flex-shrink-0
+                            {% if m.away_goals > m.home_goals %}text-green-400
+                            {% else %}text-white/30{% endif %}">{{ m.away_goals }}</span>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_staff and not m.played and m.home and m.away %}
+                    <div class="px-2.5 pb-2">
+                        <a href="{% url 'enter_result' m.id %}"
+                           class="block text-center text-[9px] font-bold
+                                  text-amber-400/70 hover:text-amber-400
+                                  py-1 rounded-lg border border-amber-400/10
+                                  hover:border-amber-400/30 transition-colors">
+                            ✏️ Résultat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% endif %}{% endfor %}
+            </div>
+
+        </div>
     </div>
-    <!-- Demis -->
-    <div>
-      <h3 class="font-bold mb-3 text-sky-400 uppercase">Demis</h3>
-      {% for m in sf %}<div class="p-2 bg-[#0f172a] rounded-lg mb-2">{{ m.home.name|default:"?" }} vs {{ m.away.name|default:"?" }}</div>{% endfor %}
     </div>
-    <!-- 3e place -->
-    <div>
-      <h3 class="font-bold mb-3 text-purple-400 uppercase">3ème place</h3>
-      <div class="p-3 bg-[#0f172a] rounded-lg border border-purple-500/30">
-        {{ third.home.name|default:"Perdant D1" }} vs {{ third.away.name|default:"Perdant D2" }}
-      </div>
+
+    <!-- ═══════════════════════════════════════
+         VUE MOBILE — Liste par phase
+    ═══════════════════════════════════════ -->
+    <div class="md:hidden space-y-6">
+
+        <!-- Macro pour afficher un match mobile -->
+        <!-- Huitièmes -->
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <h3 class="text-sm font-black uppercase tracking-widest text-amber-400">
+                    Huitièmes de finale
+                </h3>
+            </div>
+            <div class="space-y-2">
+            {% for m in r16 %}
+            <div class="bg-[#0f172a] border border-white/8 rounded-xl overflow-hidden">
+                <div class="flex items-center justify-between px-3 py-2
+                            bg-white/3 border-b border-white/5">
+                    <span class="text-[10px] text-amber-400/60 font-bold">
+                        R16 · {{ forloop.counter }}
+                    </span>
+                    {% if m.played %}
+                    <span class="text-[10px] text-white/30 bg-white/5
+                                 px-2 py-0.5 rounded-full">✅ FT</span>
+                    {% elif m.scheduled_at %}
+                    <span class="text-[10px] text-amber-400 countdown-badge"
+                          data-deadline="{{ m.scheduled_at|date:'U' }}">⏱ ...</span>
+                    {% else %}
+                    <span class="text-[10px] text-white/20">À venir</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center justify-between px-3 py-3 gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-bold truncate
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/50{% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"?" }}
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        {% if m.played %}
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-lg font-black
+                                {% if m.home_goals > m.away_goals %}text-green-400
+                                {% else %}text-white/40{% endif %}">{{ m.home_goals }}</span>
+                            <span class="text-white/20">—</span>
+                            <span class="text-lg font-black
+                                {% if m.away_goals > m.home_goals %}text-green-400
+                                {% else %}text-white/40{% endif %}">{{ m.away_goals }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-xs font-bold text-white/30 bg-white/5
+                                     px-2 py-1 rounded-lg border border-white/10">VS</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0 text-right">
+                        <div class="text-sm font-bold truncate
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/50{% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"?" }}
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.is_staff and not m.played and m.home and m.away %}
+                <div class="px-3 pb-3">
+                    <a href="{% url 'enter_result' m.id %}"
+                       class="block text-center text-[10px] font-bold text-amber-400
+                              bg-amber-400/10 py-1.5 rounded-lg border border-amber-400/20
+                              hover:bg-amber-400/20 transition-colors">
+                        ✏️ Saisir résultat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-white/30 text-sm text-center py-6">
+                En attente du tirage au sort
+            </p>
+            {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quarts -->
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                <h3 class="text-sm font-black uppercase tracking-widest text-orange-400">
+                    Quarts de finale
+                </h3>
+            </div>
+            <div class="space-y-2">
+            {% for m in qf %}
+            <div class="bg-[#0f172a] border border-white/8 rounded-xl overflow-hidden">
+                <div class="flex items-center justify-between px-3 py-2
+                            bg-white/3 border-b border-white/5">
+                    <span class="text-[10px] text-orange-400/60 font-bold">
+                        QF · {{ forloop.counter }}
+                    </span>
+                    {% if m.played %}
+                    <span class="text-[10px] text-white/30 bg-white/5
+                                 px-2 py-0.5 rounded-full">✅ FT</span>
+                    {% elif m.scheduled_at %}
+                    <span class="text-[10px] text-orange-400 countdown-badge"
+                          data-deadline="{{ m.scheduled_at|date:'U' }}">⏱ ...</span>
+                    {% else %}
+                    <span class="text-[10px] text-white/20">À venir</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center justify-between px-3 py-3 gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-bold truncate
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/50{% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"Vainq. R16" }}
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        {% if m.played %}
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-lg font-black
+                                {% if m.home_goals > m.away_goals %}text-green-400
+                                {% else %}text-white/40{% endif %}">{{ m.home_goals }}</span>
+                            <span class="text-white/20">—</span>
+                            <span class="text-lg font-black
+                                {% if m.away_goals > m.home_goals %}text-green-400
+                                {% else %}text-white/40{% endif %}">{{ m.away_goals }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-xs font-bold text-white/30 bg-white/5
+                                     px-2 py-1 rounded-lg border border-white/10">VS</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0 text-right">
+                        <div class="text-sm font-bold truncate
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/50{% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"Vainq. R16" }}
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.is_staff and not m.played and m.home and m.away %}
+                <div class="px-3 pb-3">
+                    <a href="{% url 'enter_result' m.id %}"
+                       class="block text-center text-[10px] font-bold text-amber-400
+                              bg-amber-400/10 py-1.5 rounded-lg border border-amber-400/20
+                              hover:bg-amber-400/20 transition-colors">
+                        ✏️ Saisir résultat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-white/30 text-sm text-center py-6">En attente</p>
+            {% endfor %}
+            </div>
+        </div>
+
+        <!-- Demis -->
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                <h3 class="text-sm font-black uppercase tracking-widest text-sky-400">
+                    Demi-finales
+                </h3>
+            </div>
+            <div class="space-y-2">
+            {% for m in sf %}
+            <div class="bg-[#0f172a] border border-sky-400/15 rounded-xl overflow-hidden">
+                <div class="flex items-center justify-between px-3 py-2
+                            bg-sky-400/5 border-b border-sky-400/10">
+                    <span class="text-[10px] text-sky-400/60 font-bold">
+                        Demi {{ forloop.counter }}
+                    </span>
+                    {% if m.played %}
+                    <span class="text-[10px] text-white/30 bg-white/5
+                                 px-2 py-0.5 rounded-full">✅ FT</span>
+                    {% elif m.scheduled_at %}
+                    <span class="text-[10px] text-sky-400 countdown-badge"
+                          data-deadline="{{ m.scheduled_at|date:'U' }}">⏱ ...</span>
+                    {% else %}
+                    <span class="text-[10px] text-white/20">À venir</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center justify-between px-3 py-3 gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-bold truncate
+                            {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                            {% elif m.played %}text-white/50{% else %}text-white{% endif %}">
+                            {{ m.home.name|default:"Vainq. QF" }}
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        {% if m.played %}
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-lg font-black
+                                {% if m.home_goals > m.away_goals %}text-green-400
+                                {% else %}text-white/40{% endif %}">{{ m.home_goals }}</span>
+                            <span class="text-white/20">—</span>
+                            <span class="text-lg font-black
+                                {% if m.away_goals > m.home_goals %}text-green-400
+                                {% else %}text-white/40{% endif %}">{{ m.away_goals }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-xs font-bold text-white/30 bg-white/5
+                                     px-2 py-1 rounded-lg border border-white/10">VS</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0 text-right">
+                        <div class="text-sm font-bold truncate
+                            {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                            {% elif m.played %}text-white/50{% else %}text-white{% endif %}">
+                            {{ m.away.name|default:"Vainq. QF" }}
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.is_staff and not m.played and m.home and m.away %}
+                <div class="px-3 pb-3">
+                    <a href="{% url 'enter_result' m.id %}"
+                       class="block text-center text-[10px] font-bold text-sky-400
+                              bg-sky-400/10 py-1.5 rounded-lg border border-sky-400/20
+                              hover:bg-sky-400/20 transition-colors">
+                        ✏️ Saisir résultat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-white/30 text-sm text-center py-6">En attente</p>
+            {% endfor %}
+            </div>
+        </div>
+
+        <!-- 3ème place + Finale mobile -->
+        {% if third %}
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                <h3 class="text-sm font-black uppercase tracking-widest text-purple-400">
+                    🥉 Match 3ème place
+                </h3>
+            </div>
+            <div class="bg-[#0f172a] border border-purple-500/25 rounded-xl overflow-hidden">
+                <div class="flex items-center justify-between px-3 py-2
+                            bg-purple-500/10 border-b border-purple-500/15">
+                    <span class="text-[10px] text-purple-400 font-bold">3ème place</span>
+                    {% if third.played %}
+                    <span class="text-[10px] text-white/30 bg-white/5
+                                 px-2 py-0.5 rounded-full">✅ FT</span>
+                    {% elif third.scheduled_at %}
+                    <span class="text-[10px] text-purple-400 countdown-badge"
+                          data-deadline="{{ third.scheduled_at|date:'U' }}">⏱ ...</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center justify-between px-3 py-3 gap-3">
+                    <span class="flex-1 text-sm font-bold truncate
+                        {% if third.played and third.home_goals > third.away_goals %}
+                            text-purple-400
+                        {% elif third.played %}text-white/50{% else %}text-white{% endif %}">
+                        {{ third.home.name|default:"Perdant D1" }}
+                    </span>
+                    <div class="flex-shrink-0">
+                        {% if third.played %}
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-lg font-black
+                                {% if third.home_goals > third.away_goals %}text-purple-400
+                                {% else %}text-white/40{% endif %}">{{ third.home_goals }}</span>
+                            <span class="text-white/20">—</span>
+                            <span class="text-lg font-black
+                                {% if third.away_goals > third.home_goals %}text-purple-400
+                                {% else %}text-white/40{% endif %}">{{ third.away_goals }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-xs font-bold text-white/30 bg-white/5
+                                     px-2 py-1 rounded-lg border border-white/10">VS</span>
+                        {% endif %}
+                    </div>
+                    <span class="flex-1 text-sm font-bold truncate text-right
+                        {% if third.played and third.away_goals > third.home_goals %}
+                            text-purple-400
+                        {% elif third.played %}text-white/50{% else %}text-white{% endif %}">
+                        {{ third.away.name|default:"Perdant D2" }}
+                    </span>
+                </div>
+                {% if request.user.is_staff and not third.played and third.home and third.away %}
+                <div class="px-3 pb-3">
+                    <a href="{% url 'enter_result' third.id %}"
+                       class="block text-center text-[10px] font-bold text-purple-400
+                              bg-purple-400/10 py-1.5 rounded-lg border border-purple-400/20
+                              hover:bg-purple-400/20 transition-colors">
+                        ✏️ Saisir résultat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if final %}
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <h3 class="text-sm font-black uppercase tracking-widest text-amber-400">
+                    🏆 Grande Finale
+                </h3>
+            </div>
+            <div class="bg-gradient-to-br from-amber-500/15 to-orange-600/10
+                        border-2 border-amber-500/40 rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-3 py-2
+                            bg-amber-500/10 border-b border-amber-500/20">
+                    <span class="text-[10px] text-amber-400 font-black">Grande Finale</span>
+                    {% if final.played %}
+                    <span class="text-[10px] text-white/30 bg-white/5
+                                 px-2 py-0.5 rounded-full">✅ FT</span>
+                    {% elif final.scheduled_at %}
+                    <span class="text-[10px] text-amber-400 countdown-badge"
+                          data-deadline="{{ final.scheduled_at|date:'U' }}">⏱ ...</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center justify-between px-3 py-4 gap-3">
+                    <span class="flex-1 text-base font-black truncate
+                        {% if final.played and final.home_goals > final.away_goals %}
+                            text-amber-400
+                        {% elif final.played %}text-white/40{% else %}text-white{% endif %}">
+                        {{ final.home.name|default:"?" }}
+                    </span>
+                    <div class="flex-shrink-0">
+                        {% if final.played %}
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl font-black
+                                {% if final.home_goals > final.away_goals %}text-amber-400
+                                {% else %}text-white/40{% endif %}">{{ final.home_goals }}</span>
+                            <span class="text-white/20 text-lg">—</span>
+                            <span class="text-2xl font-black
+                                {% if final.away_goals > final.home_goals %}text-amber-400
+                                {% else %}text-white/40{% endif %}">{{ final.away_goals }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-sm font-black text-white/30 bg-white/5
+                                     px-3 py-1.5 rounded-xl border border-white/10">VS</span>
+                        {% endif %}
+                    </div>
+                    <span class="flex-1 text-base font-black truncate text-right
+                        {% if final.played and final.away_goals > final.home_goals %}
+                            text-amber-400
+                        {% elif final.played %}text-white/40{% else %}text-white{% endif %}">
+                        {{ final.away.name|default:"?" }}
+                    </span>
+                </div>
+                {% if final.played %}
+                <div class="px-3 pb-4">
+                    <div class="bg-gradient-to-r from-amber-500 to-orange-500
+                                rounded-xl py-3 text-center">
+                        <div class="text-[10px] font-bold text-black/60
+                                    uppercase tracking-widest">🏆 Champion</div>
+                        <div class="text-lg font-black text-black">
+                            {% if final.home_goals > final.away_goals %}
+                                {{ final.home.name }}
+                            {% else %}
+                                {{ final.away.name }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if request.user.is_staff and not final.played and final.home and final.away %}
+                <div class="px-3 pb-3">
+                    <a href="{% url 'enter_result' final.id %}"
+                       class="block text-center text-[10px] font-bold text-amber-400
+                              bg-amber-400/10 py-1.5 rounded-lg border border-amber-400/20
+                              hover:bg-amber-400/20 transition-colors">
+                        ✏️ Saisir résultat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
     </div>
-    <!-- Finale -->
-    <div>
-      <h3 class="font-bold mb-3 text-emerald-400 uppercase">Finale</h3>
-      <div class="p-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold rounded-xl">
-        {{ final.home.name|default:"?" }} vs {{ final.away.name|default:"?" }}
-      </div>
-    </div>
-  </div>
+
 </div>
+
+<!-- Compte à rebours JS -->
+<script>
+function formatCountdown(secs) {
+    if (secs <= 0) return "⏰ Temps écoulé";
+    const d = Math.floor(secs / 86400);
+    const h = Math.floor((secs % 86400) / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (d > 0) return `⏱ ${d}j ${h}h`;
+    if (h > 0) return `⏱ ${h}h ${String(m).padStart(2,'0')}min`;
+    if (m > 0) return `⏱ ${m}min ${String(s).padStart(2,'0')}s`;
+    return `⏱ ${s}s`;
+}
+
+function updateCountdowns() {
+    const now = Math.floor(Date.now() / 1000);
+    document.querySelectorAll('.countdown-badge[data-deadline]').forEach(el => {
+        const dl = parseInt(el.dataset.deadline, 10);
+        if (isNaN(dl)) return;
+        const remaining = dl - now;
+        el.textContent = formatCountdown(remaining);
+
+        el.classList.remove(
+            'text-red-400', 'text-orange-400',
+            'text-amber-400', 'text-sky-400', 'text-purple-400'
+        );
+        if (remaining < 3600) {
+            el.classList.add('text-red-400');
+        } else if (remaining < 21600) {
+            el.classList.add('text-orange-400');
+        } else {
+            el.classList.add('text-amber-400');
+        }
+    });
+}
+
+updateCountdowns();
+setInterval(updateCountdowns, 1000);
+</script>
+
 {% endblock %}
