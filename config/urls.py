@@ -38,4 +38,6 @@ urlpatterns = [
     
 
     path('match/<int:match_id>/resultat/', views.enter_result, name='enter_result'),
+    path('match/<int:match_id>/annuler/',
+     views.cancel_result, name='cancel_result'),
 ]

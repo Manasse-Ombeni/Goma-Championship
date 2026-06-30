@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-md mx-auto px-3 pb-20">
+
+    <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 bg-red-400/10 border border-red-400/20
+                    rounded-full px-4 py-1.5 mb-3">
+            <span class="text-red-400 text-xs font-bold uppercase tracking-widest">
+                ⚠️ Annulation de résultat
+            </span>
+        </div>
+        <h1 class="text-2xl font-black">Annuler ce résultat ?</h1>
+    </div>
+
+    <!-- Match card -->
+    <div class="bg-[#0f172a] border border-red-500/30 rounded-2xl overflow-hidden mb-6">
+
+        <div class="px-4 py-2 bg-red-500/10 border-b border-red-500/20 text-center">
+            <span class="text-xs font-bold text-red-400 uppercase tracking-widest">
+                {{ m.get_phase_display }}
+                {% if m.group %} · Groupe {{ m.group.name }}{% endif %}
+            </span>
+        </div>
+
+        <div class="flex items-center justify-between px-6 py-5 gap-4">
+
+            <div class="flex-1 text-center">
+                <div class="text-base font-black text-white truncate">
+                    {{ m.home.name }}
+                </div>
+            </div>
+
+            <div class="flex-shrink-0 text-center">
+                {% if m.played %}
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl font-black text-white">
+                        {{ m.home_goals }}
+                    </span>
+                    <span class="text-white/30">-</span>
+                    <span class="text-2xl font-black text-white">
+                        {{ m.away_goals }}
+                    </span>
+                </div>
+                {% if m.extra_time %}
+                <div class="text-xs text-sky-400 mt-1">
+                    Prolongations
+                    {% if m.penalty_shootout %}
+                    · TAB {{ m.home_penalties }}-{{ m.away_penalties }}
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% else %}
+                <span class="text-white/40 font-bold">VS</span>
+                {% endif %}
+            </div>
+
+            <div class="flex-1 text-center">
+                <div class="text-base font-black text-white truncate">
+                    {{ m.away.name }}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Avertissement -->
+    <div class="p-4 bg-amber-500/10 border border-amber-500/20
+                rounded-xl mb-6">
+        <p class="text-amber-300 text-sm leading-relaxed">
+            ⚠️ <strong>Cette action va :</strong><br>
+            • Remettre le match en statut "non joué"<br>
+            • Effacer le score enregistré<br>
+            {% if m.phase == 'group' %}
+            • Recalculer les points et buts de toutes les équipes<br>
+            {% endif %}
+            • Cette action est réversible (tu peux re-encoder le résultat)
+        </p>
+    </div>
+
+    <!-- Boutons -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="flex gap-3">
+            <a href="{% if m.phase == 'group' %}{% url 'schedule' %}
+                     {% else %}{% url 'bracket' %}{% endif %}"
+               class="flex-1 py-3 bg-white/5 border border-white/10
+                      rounded-xl text-center text-sm font-bold text-white/60
+                      hover:bg-white/10 transition-colors">
+                ← Annuler
+            </a>
+            <button type="submit"
+                    class="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600
+                           text-white font-black rounded-xl text-sm
+                           hover:shadow-lg hover:shadow-red-500/30
+                           transition-all active:scale-95">
+                🗑️ Confirmer l'annulation
+            </button>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}
