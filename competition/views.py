@@ -80,85 +80,105 @@ def schedule(request):
     t = Tournament.objects.first()
     now = timezone.now()
 
-    matches = Match.objects.filter(
-        tournament=t, phase='group'
-    ).select_related(
-        'home', 'away', 'group', 'home__owner', 'away__owner'
-    ).order_by('scheduled_at', 'group__name', 'id')
-
     user_team = (
         Team.objects.filter(tournament=t, owner=request.user).first()
         if request.user.is_authenticated else None
     )
 
-    # ── Regroupement par journée via scheduled_at ────────────────
-    # On détermine J1/J2/J3 selon la date du scheduled_at
-    matches_by_day = {'J1': [], 'J2': [], 'J3': []}
+    # ── PHASE DE GROUPES ────────────────────────────────────────
+    group_matches = Match.objects.filter(
+        tournament=t, phase='group'
+    ).select_related(
+        'home', 'away', 'group', 'home__owner', 'away__owner'
+    ).order_by('scheduled_at', 'group__name', 'id')
 
-    # Récupère les dates uniques triées pour identifier J1, J2, J3
+    # Dates uniques → J1/J2/J3
     dates_uniques = sorted(set(
         m.scheduled_at.date()
-        for m in matches
+        for m in group_matches
         if m.scheduled_at
     ))
-
-    # Associe chaque date à une journée
     date_to_day = {}
-    labels = ['J1', 'J2', 'J3']
     for i, date in enumerate(dates_uniques[:3]):
-        date_to_day[date] = labels[i]
+        date_to_day[date] = ['J1', 'J2', 'J3'][i]
 
-    for m in matches:
-        # ── Compte à rebours ────────────────────────────────────
-        if m.played:
-            m.hours_left = 0
-            m.minutes_left = 0
-            m.countdown_label = "Terminé"
-        elif m.scheduled_at:
-            delta = m.scheduled_at - now
-            total_seconds = max(0, int(delta.total_seconds()))
-            m.hours_left = total_seconds // 3600
-            m.minutes_left = (total_seconds % 3600) // 60
-            m.countdown_ts = int(m.scheduled_at.timestamp())  # pour JS
+    matches_by_day = {'J1': [], 'J2': [], 'J3': []}
 
-            if total_seconds <= 0:
-                m.countdown_label = "Temps écoulé"
-            elif m.hours_left < 1:
-                m.countdown_label = f"{m.minutes_left}min"
-            else:
-                m.countdown_label = f"{m.hours_left}h {m.minutes_left:02d}min"
-        else:
-            m.hours_left = 0
-            m.minutes_left = 0
-            m.countdown_label = "À planifier"
-            m.countdown_ts = None
-
+    for m in group_matches:
+        # Compte à rebours
+        _set_countdown(m, now)
         m.is_mine = user_team and (m.home == user_team or m.away == user_team)
 
-        # ── Affectation à la bonne journée ──────────────────────
         if m.scheduled_at:
             day_label = date_to_day.get(m.scheduled_at.date())
             if day_label:
                 matches_by_day[day_label].append(m)
         else:
-            # Fallback : répartition par index si pas de date
-            # (ancien système, au cas où)
-            group_matches = list(matches.filter(group=m.group))
-            try:
-                idx = group_matches.index(m)
-                if idx < 2:
-                    matches_by_day['J1'].append(m)
-                elif idx < 4:
-                    matches_by_day['J2'].append(m)
-                else:
-                    matches_by_day['J3'].append(m)
-            except ValueError:
-                matches_by_day['J1'].append(m)
+            matches_by_day['J1'].append(m)
+
+    # ── PHASE ÉLIMINATOIRE ──────────────────────────────────────
+    knockout_phases = {
+        'R16': {'label': '8e de Finale',  'icon': '⚔️',  'color': 'amber'},
+        'QF':  {'label': 'Quarts',        'icon': '🔥',  'color': 'orange'},
+        'SF':  {'label': 'Demi-finales',  'icon': '⭐',  'color': 'sky'},
+        '3P':  {'label': '3ème Place',    'icon': '🥉',  'color': 'purple'},
+        'F':   {'label': 'Finale',        'icon': '🏆',  'color': 'emerald'},
+    }
+
+    knockout_data = {}
+    for phase_code, meta in knockout_phases.items():
+        phase_matches = Match.objects.filter(
+            tournament=t, phase=phase_code
+        ).select_related(
+            'home', 'away', 'home__owner', 'away__owner'
+        ).order_by('id')
+
+        processed = []
+        for m in phase_matches:
+            _set_countdown(m, now)
+            m.is_mine = user_team and (
+                m.home == user_team or m.away == user_team
+            )
+            processed.append(m)
+
+        if processed:
+            knockout_data[phase_code] = {
+                'matches': processed,
+                'meta': meta,
+            }
 
     return render(request, 'competition/matches.html', {
         'days': matches_by_day,
+        'knockout': knockout_data,
         'user_team': user_team,
+        'knockout_phases': knockout_phases,
     })
+
+
+def _set_countdown(m, now):
+    """Helper : calcule le compte à rebours sur un match"""
+    if m.played:
+        m.hours_left = 0
+        m.countdown_label = "Terminé"
+        m.countdown_ts = None
+    elif m.scheduled_at:
+        delta = m.scheduled_at - now
+        total_seconds = max(0, int(delta.total_seconds()))
+        m.hours_left = total_seconds // 3600
+        m.minutes_left = (total_seconds % 3600) // 60
+        m.countdown_ts = int(m.scheduled_at.timestamp())
+        if total_seconds <= 0:
+            m.countdown_label = "Temps écoulé"
+        elif m.hours_left < 1:
+            m.countdown_label = f"{m.minutes_left}min"
+        else:
+            m.countdown_label = f"{m.hours_left}h {m.minutes_left:02d}min"
+    else:
+        m.hours_left = 99
+        m.countdown_label = "À planifier"
+        m.countdown_ts = None
+
+
 
 def standings(request):
     t = Tournament.objects.first()

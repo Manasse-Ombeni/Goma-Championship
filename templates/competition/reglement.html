@@ -12,14 +12,19 @@
 
   <!-- Card principale -->
   <div class="bg-[#0f172a] border border-white/10 rounded-3xl overflow-hidden">
-    
+
     <!-- 1. Dispositions -->
     <div class="p-8 border-b border-white/5">
       <div class="flex items-start gap-4">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center font-black text-white shrink-0">1</div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500
+                    flex items-center justify-center font-black text-white shrink-0">1</div>
         <div>
           <h2 class="text-2xl font-bold mb-3">Dispositions générales</h2>
-          <p class="text-white/70 leading-relaxed">Le championnat Goma eFootball est une compétition officielle organisée sur eFootball Mobile. Tous les participants s'engagent à respecter l'intégralité du présent règlement dès leur inscription.</p>
+          <p class="text-white/70 leading-relaxed">
+            Le championnat Goma eFootball est une compétition officielle organisée sur
+            eFootball Mobile. Tous les participants s'engagent à respecter l'intégralité
+            du présent règlement dès leur inscription.
+          </p>
           <div class="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
             <p class="text-red-400 text-sm">⚠ Le non-respect peut entraîner l'exclusion définitive.</p>
           </div>
@@ -30,43 +35,111 @@
     <!-- 2. Paramètres -->
     <div class="p-8 border-b border-white/5">
       <div class="flex items-start gap-4">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center font-black text-white shrink-0">2</div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500
+                    flex items-center justify-center font-black text-white shrink-0">2</div>
         <div class="flex-1">
-          <h2 class="text-2xl font-bold mb-4">Paramètres officiels</h2>
-          
+          <h2 class="text-2xl font-bold mb-4">Paramètres officiels des matchs</h2>
+
           <div class="grid md:grid-cols-2 gap-4">
-            <div class="bg-white/5 p-5 rounded-2xl">
-              <h3 class="font-bold text-amber-400 mb-3">Phase de groupes</h3>
-              <ul class="space-y-2 text-sm text-white/70">
-                <li>• Durée : <b>10 minutes</b></li>
-                <li>• Forme : Excellente (les 2)</li>
-                <li>• Remplacements : 5 max</li>
-                <li>• Météo : Par défaut</li>
+
+            <!-- Phase de groupes -->
+            <div class="bg-white/5 p-5 rounded-2xl border border-white/8">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-lg">🏟️</span>
+                <h3 class="font-bold text-amber-400">Phase de groupes</h3>
+              </div>
+              <ul class="space-y-2.5 text-sm text-white/70">
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">⏱ Durée</span>
+                  <span class="font-bold text-white">10 minutes</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">💪 Forme domicile</span>
+                  <span class="font-bold text-emerald-400">Excellente</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">💪 Forme extérieur</span>
+                  <span class="font-bold text-emerald-400">Excellente</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">🔄 Remplacements</span>
+                  <span class="font-bold text-white">5 max</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">🌦️ Météo</span>
+                  <span class="font-bold text-white">Par défaut</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">⏰ Prolongations</span>
+                  <span class="font-bold text-red-400">Désactivées</span>
+                </li>
               </ul>
             </div>
-            <div class="bg-white/5 p-5 rounded-2xl">
-              <h3 class="font-bold text-amber-400 mb-3">Phase finale</h3>
-              <ul class="space-y-2 text-sm text-white/70">
-                <li>• Prolongations : <b>Activées</b></li>
-                <li>• Tirs au but : <b>Activés</b></li>
-                <li>• Aucun match nul possible</li>
+
+            <!-- Phase finale -->
+            <div class="bg-gradient-to-br from-amber-500/10 to-orange-500/5
+                        p-5 rounded-2xl border border-amber-500/20">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-lg">🏆</span>
+                <h3 class="font-bold text-amber-400">Phase finale</h3>
+              </div>
+              <ul class="space-y-2.5 text-sm text-white/70">
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">⏱ Durée</span>
+                  <span class="font-bold text-white">10min sauf Finale 15 min</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">💪 Forme domicile</span>
+                  <span class="font-bold text-emerald-400">Excellente</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">💪 Forme extérieur</span>
+                  <span class="font-bold text-emerald-400">Excellente</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">🔄 Remplacements</span>
+                  <span class="font-bold text-white">5 max</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">⏰ Prolongations</span>
+                  <span class="font-bold text-emerald-400">✓ Activées</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">🎯 Tirs au but</span>
+                  <span class="font-bold text-emerald-400">✓ Activés</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-white/50">🚫 Match nul</span>
+                  <span class="font-bold text-red-400">Impossible</span>
+                </li>
               </ul>
             </div>
+
           </div>
-          <p class="text-xs text-white/50 mt-3">L'équipe à domicile crée la salle et invite.</p>
+
+          <div class="mt-4 p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl">
+            <p class="text-sky-300 text-xs">
+              🎮 <strong>Création de salle :</strong> L'équipe désignée à domicile
+              crée la salle de match et envoie l'invitation à son adversaire via WhatsApp.
+            </p>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- NOUVEAU : Cagnotte -->
+    <!-- Cagnotte -->
     <div class="p-8 border-b border-white/5">
       <div class="flex items-start gap-4">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center font-black text-white shrink-0">💰</div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500
+                    flex items-center justify-center font-black text-white shrink-0">💰</div>
         <div class="flex-1">
-          <h2 class="text-2xl font-bold mb-4">Cagnotte et répartition – Option A</h2>
-          
+          <h2 class="text-2xl font-bold mb-4">Cagnotte et répartition</h2>
+
           <div class="bg-white/5 p-5 rounded-2xl mb-4">
-            <p class="text-white/70">32 équipes × 2 500 FC = <span class="text-amber-400 font-bold text-xl">80 000 FC</span></p>
+            <p class="text-white/70">
+              32 équipes × 2 500 FC =
+              <span class="text-amber-400 font-black text-xl">80 000 FC</span>
+            </p>
           </div>
 
           <div class="grid md:grid-cols-2 gap-4">
@@ -78,46 +151,373 @@
             <div class="bg-white/5 p-5 rounded-2xl">
               <h3 class="font-bold text-amber-400 mb-3">Prix Joueurs (80%)</h3>
               <ul class="space-y-2 text-sm">
-                <li class="flex justify-between"><span class="text-white/70">🥇 1er</span><span class="font-bold">35 000 FC</span></li>
-                <li class="flex justify-between"><span class="text-white/70">🥈 2ème</span><span class="font-bold">20 000 FC</span></li>
-                <li class="flex justify-between"><span class="text-white/70">🥉 3ème</span><span class="font-bold">9 000 FC</span></li>
+                <li class="flex justify-between">
+                  <span class="text-white/70">🥇 1er</span>
+                  <span class="font-bold">35 000 FC</span>
+                </li>
+                <li class="flex justify-between">
+                  <span class="text-white/70">🥈 2ème</span>
+                  <span class="font-bold">20 000 FC</span>
+                </li>
+                <li class="flex justify-between">
+                  <span class="text-white/70">🥉 3ème</span>
+                  <span class="font-bold">9 000 FC</span>
+                </li>
               </ul>
             </div>
           </div>
-          <p class="text-xs text-white/50 mt-4">Paiement le jour de la finale. Inscription = acceptation de la répartition.</p>
+          <p class="text-xs text-white/50 mt-4">
+            Paiement le jour de la finale. L'inscription vaut acceptation de la répartition.
+          </p>
         </div>
       </div>
     </div>
 
-    <!-- 3-4-5 -->
-    <div class="p-8 border-b border-white/5 grid md:grid-cols-3 gap-6">
+    <!-- 3-4 -->
+    <div class="p-8 border-b border-white/5 grid md:grid-cols-2 gap-6">
       <div>
-        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center font-bold mb-2">3</div>
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center
+                    justify-center font-bold mb-2">3</div>
         <h3 class="font-bold mb-2">Délais</h3>
-        <p class="text-sm text-white/60">24h max après publication. Limite : 23h59.</p>
+        <p class="text-sm text-white/60">
+          Chaque match doit être joué dans les 24h suivant sa publication
+          dans le calendrier. Limite absolue : <strong>23h59</strong>.
+        </p>
       </div>
       <div>
-        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center font-bold mb-2">4</div>
-        <h3 class="font-bold mb-2">Responsabilité</h3>
-        <p class="text-sm text-white/60">Vérifie le calendrier et contacte ton adversaire.</p>
+        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center
+                    justify-center font-bold mb-2">4</div>
+        <h3 class="font-bold mb-2">Responsabilité du joueur</h3>
+        <p class="text-sm text-white/60">
+          Chaque joueur doit vérifier le calendrier régulièrement et
+          contacter son adversaire via WhatsApp pour fixer l'heure du match.
+        </p>
       </div>
-      <div>
-        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center font-bold mb-2">5</div>
-        <h3 class="font-bold mb-2">Connexion</h3>
-        <p class="text-sm text-white/60">Aucune réclamation Internet acceptée.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         ARTICLE 5 — DÉCONNEXIONS (COMPLET)
+    ═══════════════════════════════════════ -->
+    <div class="p-8 border-b border-white/5">
+      <div class="flex items-start gap-4">
+
+        <!-- Numéro -->
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-red-500
+                    flex items-center justify-center font-black text-white shrink-0
+                    shadow-lg shadow-red-500/20">5</div>
+
+        <div class="flex-1 min-w-0">
+
+          <!-- Titre -->
+          <div class="flex items-center gap-3 mb-2">
+            <h2 class="text-2xl font-bold">Déconnexions & Problèmes réseau</h2>
+            <span class="text-xs font-black text-red-400 bg-red-400/10
+                         border border-red-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              ⚡ Important
+            </span>
+          </div>
+
+          <!-- Intro -->
+          <div class="p-4 bg-blue-500/8 border border-blue-500/20 rounded-xl mb-6">
+            <p class="text-blue-200 text-sm leading-relaxed">
+              📡 Chaque joueur est <strong>personnellement responsable</strong> de tester
+              sa connexion 4G/WiFi avant son match. La connexion instable en RDC est une
+              réalité connue de tous — ce règlement existe pour protéger le
+              <strong>fair-play</strong> et éviter les abus.
+            </p>
+          </div>
+
+          <!-- CAS 1 : Score 0-0 -->
+          <div class="mb-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-500/30
+                           flex items-center justify-center text-sky-400 font-black text-sm
+                           flex-shrink-0">1</span>
+              <h3 class="font-bold text-sky-300">Score nul 0-0 au moment de la déconnexion</h3>
+            </div>
+            <div class="ml-9 p-4 bg-sky-500/8 border border-sky-500/20 rounded-xl">
+              <p class="text-white/80 text-sm leading-relaxed">
+                Si la déconnexion survient alors que le score est de <strong>0-0</strong>,
+                le match est <strong class="text-sky-300">intégralement rejoué à 0-0</strong>,
+                quel que soit le joueur déconnecté. Aucun but n'est conservé.
+              </p>
+            </div>
+          </div>
+
+          <!-- CAS 2 : Un joueur mène -->
+          <div class="mb-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30
+                           flex items-center justify-center text-amber-400 font-black text-sm
+                           flex-shrink-0">2</span>
+              <h3 class="font-bold text-amber-300">Un joueur mène au score</h3>
+            </div>
+
+            <div class="ml-9 space-y-3">
+
+              <!-- 2a -->
+              <div class="p-4 bg-red-500/8 border border-red-500/20 rounded-xl">
+                <div class="flex items-start gap-2 mb-2">
+                  <span class="text-xs font-black text-red-400 bg-red-400/15
+                               px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">CAS A</span>
+                  <p class="text-sm font-bold text-red-300">
+                    Le joueur qui <u>PERD</u> se déconnecte
+                  </p>
+                </div>
+                <p class="text-white/70 text-sm leading-relaxed ml-0">
+                  → Victoire par <strong class="text-white">forfait 3-0</strong>
+                  accordée automatiquement au joueur qui menait au score.
+                </p>
+                <div class="mt-2 p-2.5 bg-black/30 rounded-lg">
+                  <p class="text-xs text-white/50 font-mono">
+                    💡 Ex : Score 2-1 pour A, B lag → Résultat final : <strong class="text-white">A gagne 3-0</strong>
+                  </p>
+                </div>
+              </div>
+
+              <!-- 2b -->
+              <div class="p-4 bg-orange-500/8 border border-orange-500/20 rounded-xl">
+                <div class="flex items-start gap-2 mb-3">
+                  <span class="text-xs font-black text-orange-400 bg-orange-400/15
+                               px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">CAS B</span>
+                  <p class="text-sm font-bold text-orange-300">
+                    Le joueur qui <u>MÈNE</u> se déconnecte
+                  </p>
+                </div>
+
+                <div class="space-y-2.5">
+
+                  <!-- Avant 70e -->
+                  <div class="flex items-start gap-3 p-3 bg-white/4 rounded-lg
+                              border border-white/8">
+                    <span class="text-xs font-black text-white/40 bg-white/8
+                                 px-2 py-1 rounded-lg flex-shrink-0 font-mono mt-0.5">
+                      &lt; 70'
+                    </span>
+                    <div>
+                      <p class="text-sm font-bold text-white mb-0.5">
+                        Avant la 70ème minute
+                      </p>
+                      <p class="text-xs text-white/60 leading-relaxed">
+                        Match <strong class="text-amber-400">à rejouer intégralement à 0-0</strong>.
+                        Le meneur perd son avantage acquis.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Après 70e + 3 buts d'écart -->
+                  <div class="flex items-start gap-3 p-3 bg-emerald-500/8 rounded-lg
+                              border border-emerald-500/20">
+                    <span class="text-xs font-black text-emerald-400 bg-emerald-400/15
+                                 px-2 py-1 rounded-lg flex-shrink-0 font-mono mt-0.5">
+                      ≥ 70'
+                    </span>
+                    <div>
+                      <p class="text-sm font-bold text-emerald-300 mb-0.5">
+                        Après la 70ème minute — écart de 3 buts ou plus
+                      </p>
+                      <p class="text-xs text-white/60 leading-relaxed">
+                        Le score au moment de la coupure est
+                        <strong class="text-emerald-400">validé définitivement</strong>.
+                        Aucun match à rejouer.
+                      </p>
+                      <div class="mt-1.5 p-2 bg-black/30 rounded-lg">
+                        <p class="text-xs text-white/40 font-mono">
+                          💡 Ex : 5-0 à la 85', le meneur lag →
+                          <strong class="text-white">5-0 validé</strong>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Après 70e + moins de 3 buts -->
+                  <div class="flex items-start gap-3 p-3 bg-red-500/8 rounded-lg
+                              border border-red-500/20">
+                    <span class="text-xs font-black text-red-400 bg-red-400/15
+                                 px-2 py-1 rounded-lg flex-shrink-0 font-mono mt-0.5">
+                      ≥ 70'
+                    </span>
+                    <div>
+                      <p class="text-sm font-bold text-red-300 mb-0.5">
+                        Après la 70ème minute — écart de moins de 3 buts
+                      </p>
+                      <p class="text-xs text-white/60 leading-relaxed">
+                        Match <strong class="text-red-400">à rejouer à 0-0</strong>.
+                        L'avantage du meneur n'est pas conservé.
+                      </p>
+                      <div class="mt-1.5 p-2 bg-black/30 rounded-lg">
+                        <p class="text-xs text-white/40 font-mono">
+                          💡 Ex : 2-0 à la 88', le meneur lag →
+                          <strong class="text-white">on rejoue à 0-0</strong>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CAS 3 : Preuve et procédure -->
+          <div class="mb-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/30
+                           flex items-center justify-center text-purple-400 font-black text-sm
+                           flex-shrink-0">3</span>
+              <h3 class="font-bold text-purple-300">Preuve et procédure de réclamation</h3>
+            </div>
+            <div class="ml-9 p-4 bg-purple-500/8 border border-purple-500/20 rounded-xl">
+              <p class="text-white/80 text-sm leading-relaxed mb-3">
+                📸 Toute réclamation doit être accompagnée d'une
+                <strong class="text-purple-300">capture d'écran ou d'une vidéo</strong>
+                montrant clairement :
+              </p>
+              <ul class="space-y-1.5 text-sm text-white/70 mb-3">
+                <li class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span>
+                  Le score exact au moment de la déconnexion
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span>
+                  Le message de déconnexion affiché par le jeu
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span>
+                  Envoyée sur le groupe WhatsApp officiel dans les
+                  <strong class="text-white">5 minutes</strong> suivant l'incident
+                </li>
+              </ul>
+              <div class="p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p class="text-xs text-red-300">
+                  ⚠️ <strong>Sans preuve valide</strong>, l'organisateur accordera
+                  automatiquement la victoire au joueur resté connecté en ligne.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Limite anti-abus -->
+          <div class="mb-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-lg bg-red-500/20 border border-red-500/30
+                           flex items-center justify-center text-red-400 font-black text-sm
+                           flex-shrink-0">4</span>
+              <h3 class="font-bold text-red-300">Limite anti-abus</h3>
+            </div>
+            <div class="ml-9 p-4 bg-red-500/8 border border-red-500/20 rounded-xl">
+              <div class="flex items-center gap-4 flex-wrap">
+                <div class="text-center">
+                  <div class="text-4xl font-black text-red-400">3</div>
+                  <div class="text-xs text-white/40 uppercase tracking-wider">
+                    déco. max
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-white/80 text-sm leading-relaxed">
+                    Maximum <strong class="text-white">2 déconnexions</strong> tolérées
+                    par joueur et par match. À la
+                    <strong class="text-red-400">3ème déconnexion</strong>,
+                    c'est un <strong class="text-white">forfait automatique 3-0</strong>
+                    contre le joueur déconnecté —
+                    <em>même s'il menait au score</em>.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Force majeure -->
+          <div class="mb-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-lg bg-gray-500/20 border border-gray-500/30
+                           flex items-center justify-center text-gray-400 font-black text-sm
+                           flex-shrink-0">5</span>
+              <h3 class="font-bold text-gray-300">Cas de force majeure</h3>
+            </div>
+            <div class="ml-9 p-4 bg-white/4 border border-white/10 rounded-xl">
+              <p class="text-white/70 text-sm leading-relaxed mb-2">
+                Les situations suivantes sont considérées comme cas de force majeure :
+              </p>
+              <ul class="space-y-1.5 text-sm text-white/60 mb-3">
+                <li class="flex items-center gap-2">
+                  <span class="text-yellow-400">⚡</span>
+                  Coupure générale d'électricité affectant les deux joueurs
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-blue-400">🔧</span>
+                  Maintenance ou panne des serveurs Konami (eFootball)
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-purple-400">📱</span>
+                  Bug serveur généralisé confirmé par Konami
+                </li>
+              </ul>
+              <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <p class="text-xs text-amber-300">
+                  🏛️ Dans ces cas, le match est
+                  <strong>reporté par décision de l'organisation</strong>.
+                  La décision est souveraine et sans appel.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- NB : Cas non prévus -->
+          <div class="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/8
+                      border border-amber-500/25 rounded-xl">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl flex-shrink-0">⚖️</span>
+              <div>
+                <h4 class="font-black text-amber-400 mb-1 uppercase tracking-wide text-sm">
+                  N.B. — Cas non prévus par le règlement
+                </h4>
+                <p class="text-white/70 text-sm leading-relaxed mb-2">
+                  Le eFootball Mobile en Afrique crée parfois des situations
+                  imprévues : coupure électrique, mise à jour forcée de Konami,
+                  bug de serveur inattendu, etc.
+                </p>
+                <p class="text-white/70 text-sm leading-relaxed mb-2">
+                  L'organisation de <strong class="text-white">Goma Efootball Championship</strong>
+                  se réserve le droit de trancher tout litige non prévu dans ce règlement,
+                  dans un esprit d'équité et de fair-play.
+                </p>
+                <div class="flex flex-wrap gap-3 mt-3">
+                  <div class="flex items-center gap-1.5 bg-red-500/10 border
+                              border-red-500/20 rounded-lg px-3 py-1.5">
+                    <span class="text-red-400 text-xs">⏱</span>
+                    <span class="text-red-300 text-xs font-bold">
+                      Aucune contestation après 15 minutes
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-white/5 border
+                              border-white/10 rounded-lg px-3 py-1.5">
+                    <span class="text-white/40 text-xs">🏛️</span>
+                    <span class="text-white/50 text-xs font-bold">
+                      Décision finale = souveraine
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 
     <!-- 6. Adversaire injoignable -->
     <div class="p-8 border-b border-white/5">
       <div class="flex items-start gap-4">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center font-black text-white shrink-0">6</div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500
+                    flex items-center justify-center font-black text-white shrink-0">6</div>
         <div>
           <h2 class="text-2xl font-bold mb-3">Adversaire injoignable</h2>
           <ol class="space-y-2 text-white/70">
-            <li>1. Contacte directement</li>
-            <li>2. Signale dans le groupe WhatsApp avant le délai</li>
-            <li>3. Fournis les preuves</li>
+            <li>1. Contacte directement ton adversaire via WhatsApp</li>
+            <li>2. Signale la situation dans le groupe WhatsApp officiel avant la fin du délai</li>
+            <li>3. Fournis les preuves de tes tentatives de contact</li>
           </ol>
         </div>
       </div>
@@ -126,18 +526,21 @@
     <!-- 7. Forfaits -->
     <div class="p-8 border-b border-white/5">
       <div class="flex items-start gap-4">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center font-black text-white shrink-0">7</div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-500
+                    flex items-center justify-center font-black text-white shrink-0">7</div>
         <div class="flex-1">
           <h2 class="text-2xl font-bold mb-4">Forfaits</h2>
           <div class="grid md:grid-cols-2 gap-4">
             <div class="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl">
               <h4 class="font-bold text-red-400">Forfait individuel</h4>
               <p class="text-3xl font-black my-2">3 - 0</p>
-              <p class="text-sm text-white/60">Pour le joueur présent</p>
+              <p class="text-sm text-white/60">Pour le joueur présent et connecté</p>
             </div>
             <div class="p-5 bg-white/5 rounded-2xl">
               <h4 class="font-bold">Double forfait</h4>
-              <p class="text-sm text-white/60 mt-2">0 point pour les deux. Match non rejoué.</p>
+              <p class="text-sm text-white/60 mt-2">
+                0 point pour les deux joueurs. Le match n'est pas rejoué.
+              </p>
             </div>
           </div>
         </div>
@@ -146,19 +549,57 @@
 
     <!-- 8-12 -->
     <div class="p-8 space-y-6">
-      <div><h3 class="font-bold text-lg mb-2">8. Validation des résultats</h3><p class="text-white/70 text-sm">Les DEUX joueurs envoient la capture d'écran immédiatement dans le groupe WhatsApp.</p></div>
-      <div><h3 class="font-bold text-lg mb-2">9. Fair-play</h3><p class="text-white/70 text-sm">Respect, courtoisie, esprit sportif. Insultes, provocations, discrimination = sanction.</p></div>
-      <div><h3 class="font-bold text-lg mb-2">10. Tricherie</h3><p class="text-white/70 text-sm">Falsification, faux comptes = exclusion immédiate.</p></div>
-      <div><h3 class="font-bold text-lg mb-2">11. Pouvoir de l'organisation</h3><p class="text-white/70 text-sm">L'organisation tranche en dernier ressort.</p></div>
+      <div>
+        <h3 class="font-bold text-lg mb-2">8. Validation des résultats</h3>
+        <p class="text-white/70 text-sm">
+          Les <strong>deux joueurs</strong> doivent envoyer leur capture d'écran
+          du résultat final immédiatement après le match dans le groupe WhatsApp officiel.
+        </p>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg mb-2">9. Fair-play & Comportement</h3>
+        <p class="text-white/70 text-sm">
+          Le respect mutuel est obligatoire. Tout comportement irrespectueux —
+          insultes, provocations, discours discriminatoire — sera sanctionné
+          pouvant aller jusqu'à l'exclusion définitive.
+        </p>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg mb-2">10. Tricherie & Fraude</h3>
+        <p class="text-white/70 text-sm">
+          Toute falsification de résultat, utilisation de faux comptes ou
+          tentative de manipulation = <strong>exclusion immédiate et définitive</strong>.
+        </p>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg mb-2">11. Autorité de l'organisation</h3>
+        <p class="text-white/70 text-sm">
+          L'organisation tranche en dernier ressort sur tout litige.
+          Ses décisions sont finales et sans appel.
+        </p>
+      </div>
       <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-        <h3 class="font-bold text-amber-400 mb-1">12. Acceptation</h3>
-        <p class="text-sm">L'inscription = acceptation totale du règlement.</p>
+        <h3 class="font-bold text-amber-400 mb-1">12. Acceptation du règlement</h3>
+        <p class="text-sm text-white/80">
+          En s'inscrivant, chaque joueur reconnaît avoir lu, compris et accepté
+          l'intégralité du présent règlement sans réserve.
+        </p>
       </div>
     </div>
+
   </div>
 
-  <div class="text-center mt-8">
-    <a href="{% url 'register' %}" class="px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-600 text-black font-bold rounded-xl">J'accepte et je m'inscris</a>
+  <!-- CTA -->
+  <div class="text-center mt-8 pb-8">
+    <a href="{% url 'register' %}"
+       class="inline-flex items-center gap-2 px-8 py-4
+              bg-gradient-to-r from-amber-400 to-orange-600
+              text-black font-black rounded-xl text-base
+              hover:shadow-lg hover:shadow-amber-500/30
+              hover:scale-[1.02] transition-all active:scale-95">
+      ✅ J'accepte et je m'inscris
+    </a>
   </div>
+
 </div>
 {% endblock %}

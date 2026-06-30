@@ -1,156 +1,172 @@
 {% extends 'base.html' %}
-
 {% block content %}
+
 <div class="max-w-xl mx-auto px-3 pb-24">
 
     <!-- En-tête -->
-    <div class="flex items-center justify-between mb-4 pt-1">
+    <div class="flex items-center justify-between mb-5 pt-1">
         <h1 class="text-2xl font-black tracking-tight">📅 Calendrier</h1>
-        <span class="text-xs text-white/40 bg-white/5 px-3 py-1
-                     rounded-full border border-white/10">
-            Phase de groupes
-        </span>
+        <a href="{% url 'bracket' %}"
+           class="text-xs text-purple-400 bg-purple-400/10 border border-purple-400/20
+                  px-3 py-1.5 rounded-full hover:bg-purple-400/20 transition-colors
+                  font-bold">
+            🏆 Bracket →
+        </a>
     </div>
 
-    <!-- Onglets journées -->
-    <div class="flex gap-2 mb-5 overflow-x-auto pb-1">
-        {% for day, matchs in days.items %}
-        <button
-            onclick="showDay('{{ day }}')"
-            id="b{{ day }}"
-            class="day-btn flex-shrink-0 px-5 py-2 rounded-full text-sm
-                   font-semibold transition-all duration-200
-                   {% if forloop.first %}
-                       bg-green-500 text-white shadow-lg shadow-green-500/30
-                   {% else %}
-                       bg-white/5 text-white/50 border border-white/10
-                   {% endif %}">
+    <!-- ═══════════════════════════════════════
+         ONGLETS : J1 J2 J3 + phases finales
+    ═══════════════════════════════════════ -->
+    <div class="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-none">
+
+        <!-- Journées groupes -->
+        {% for day in days.keys %}
+        <button onclick="showTab('{{ day }}')" id="btn-{{ day }}"
+                class="tab-btn flex-shrink-0 px-4 py-2 rounded-full text-sm
+                       font-bold transition-all duration-200
+                       {% if forloop.first %}
+                           bg-green-500 text-white shadow-lg shadow-green-500/25
+                       {% else %}
+                           bg-white/5 text-white/50 border border-white/10
+                       {% endif %}">
             {{ day }}
         </button>
         {% endfor %}
+
+        <!-- Séparateur -->
+        {% if knockout %}
+        <div class="flex-shrink-0 flex items-center px-1">
+            <div class="w-px h-5 bg-white/15 rounded"></div>
+        </div>
+
+        <!-- Phases finales -->
+        {% for phase_code, data in knockout.items %}
+        <button onclick="showTab('{{ phase_code }}')" id="btn-{{ phase_code }}"
+                class="tab-btn flex-shrink-0 px-4 py-2 rounded-full text-sm
+                       font-bold transition-all duration-200
+                       bg-white/5 text-white/50 border border-white/10
+                       whitespace-nowrap">
+            {{ data.meta.icon }} {{ data.meta.label }}
+        </button>
+        {% endfor %}
+        {% endif %}
+
     </div>
 
-    <!-- Blocs journées -->
+    <!-- ═══════════════════════════════════════
+         BLOCS JOURNÉES GROUPES
+    ═══════════════════════════════════════ -->
     {% for day, matchs in days.items %}
-    <div id="{{ day }}"
-         class="day-block {% if not forloop.first %}hidden{% endif %} space-y-3">
+    <div id="tab-{{ day }}"
+         class="tab-block {% if not forloop.first %}hidden{% endif %} space-y-3">
+
+        <!-- Badge journée -->
+        <div class="flex items-center gap-2 mb-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+            <span class="text-xs font-bold text-white/40 uppercase tracking-widest">
+                {{ day }} — Phase de groupes
+            </span>
+        </div>
 
         {% for m in matchs %}
-
-        <!-- Carte match -->
+       
+        <!-- Carte match groupe -->
         <div class="relative bg-gradient-to-br from-[#0f172a] to-[#111827]
                     border border-white/8 rounded-2xl overflow-hidden
-                    {% if m.is_mine %}ring-1 ring-green-500/50{% endif %}
-                    transition-transform duration-200 hover:scale-[1.01]">
+                    {% if m.is_mine %}ring-1 ring-green-500/40{% endif %}
+                    transition-transform duration-200 hover:scale-[1.005]">
 
-            <!-- Bandeau supérieur -->
+            <!-- Header -->
             <div class="flex items-center justify-between px-4 py-2
                         bg-white/3 border-b border-white/5">
-
-                <!-- Groupe -->
                 <div class="flex items-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full
                         {% if m.played %}bg-gray-500
                         {% elif m.hours_left < 2 %}bg-red-400 animate-pulse
                         {% else %}bg-green-400 animate-pulse{% endif %}">
                     </span>
-                    <span class="text-[11px] font-semibold text-white/50
+                    <span class="text-[11px] font-semibold text-white/40
                                  uppercase tracking-wider">
                         Groupe {{ m.group.name }}
                     </span>
                 </div>
 
-                <!-- Statut / Compte à rebours -->
                 {% if m.played %}
-                <span class="text-[10px] font-bold text-white/30 bg-white/5
-                             px-2 py-0.5 rounded-full uppercase tracking-widest">
-                    ✅ Terminé
-                </span>
-
+                <span class="text-[10px] font-bold text-white/25 bg-white/5
+                             px-2 py-0.5 rounded-full">✅ Terminé</span>
                 {% elif m.scheduled_at %}
                 <span class="countdown-badge text-[10px] font-bold px-2.5 py-0.5
                              rounded-full border
                              {% if m.hours_left < 2 %}
-                                 text-red-400 bg-red-400/10 border-red-400/25
+                                 text-red-400 bg-red-400/10 border-red-400/20
                              {% elif m.hours_left < 6 %}
-                                 text-orange-400 bg-orange-400/10 border-orange-400/25
+                                 text-orange-400 bg-orange-400/10 border-orange-400/20
                              {% else %}
-                                 text-amber-400 bg-amber-400/10 border-amber-400/20
+                                 text-amber-400 bg-amber-400/10 border-amber-400/15
                              {% endif %}"
                      data-deadline="{{ m.countdown_ts }}">
                     ⏱ {{ m.countdown_label }}
                 </span>
-
                 {% else %}
-                <span class="text-[10px] font-bold text-white/30 bg-white/5
+                <span class="text-[10px] text-white/20 bg-white/5
                              px-2 py-0.5 rounded-full border border-white/10">
                     À planifier
                 </span>
                 {% endif %}
-
             </div>
 
-            <!-- Corps du match -->
+            <!-- Corps -->
             <div class="flex items-center justify-between px-3 py-3 gap-2">
 
                 <!-- Équipe domicile -->
                 <div class="flex-1 flex flex-col items-start gap-1.5 min-w-0">
-                    <span class="text-sm font-bold text-white leading-tight truncate w-full
-                        {% if m.played and m.home_goals > m.away_goals %}text-green-400{% endif %}">
+                    <span class="text-sm font-bold leading-tight truncate w-full
+                        {% if m.played and m.home_goals > m.away_goals %}text-green-400
+                        {% elif m.played and m.home_goals < m.away_goals %}text-white/40
+                        {% else %}text-white{% endif %}">
                         {{ m.home.name }}
                     </span>
-
                     {% if m.home.whatsapp %}
                     <a href="https://wa.me/{{ m.home.whatsapp|cut:'+' }}"
                        target="_blank" rel="noopener noreferrer"
-                       title="Contacter {{ m.home.name }} sur WhatsApp"
-                       class="inline-flex items-center gap-1.5
-                              bg-[#25D366]/15 hover:bg-[#25D366]/30
-                              border border-[#25D366]/30 hover:border-[#25D366]/60
-                              text-[#25D366] text-[10px] font-semibold
-                              px-2 py-1 rounded-lg transition-all duration-200
-                              active:scale-95 select-none">
-                        <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24"
-                             fill="currentColor">
+                       class="inline-flex items-center gap-1.5 bg-[#25D366]/12
+                              hover:bg-[#25D366]/25 border border-[#25D366]/25
+                              hover:border-[#25D366]/50 text-[#25D366] text-[10px]
+                              font-semibold px-2 py-0.5 rounded-lg
+                              transition-all active:scale-95">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                         </svg>
                         Contact
                     </a>
-                    {% else %}
-                    <span class="text-[10px] text-white/20 italic">—</span>
                     {% endif %}
                 </div>
 
-                <!-- Score / VS -->
-                <div class="flex-shrink-0 flex flex-col items-center gap-0.5 px-2">
+                <!-- Score -->
+                <div class="flex-shrink-0 flex flex-col items-center px-2">
                     {% if m.played %}
                     <div class="flex items-center gap-1">
                         <span class="text-xl font-black
                             {% if m.home_goals > m.away_goals %}text-green-400
-                            {% elif m.home_goals < m.away_goals %}text-white/40
+                            {% elif m.home_goals < m.away_goals %}text-white/35
                             {% else %}text-amber-400{% endif %}">
                             {{ m.home_goals }}
                         </span>
-                        <span class="text-white/30 font-bold text-sm">-</span>
+                        <span class="text-white/25 text-sm font-bold mx-0.5">-</span>
                         <span class="text-xl font-black
                             {% if m.away_goals > m.home_goals %}text-green-400
-                            {% elif m.away_goals < m.home_goals %}text-white/40
+                            {% elif m.away_goals < m.home_goals %}text-white/35
                             {% else %}text-amber-400{% endif %}">
                             {{ m.away_goals }}
                         </span>
                     </div>
-                    <span class="text-[9px] text-white/25 uppercase tracking-widest">
-                        FT
-                    </span>
+                    <span class="text-[9px] text-white/20 uppercase tracking-widest">FT</span>
                     {% else %}
-                    <div class="bg-white/8 border border-white/10 rounded-xl px-3 py-1.5">
-                        <span class="text-sm font-black text-white/60 tracking-widest">
-                            VS
-                        </span>
+                    <div class="bg-white/6 border border-white/10 rounded-xl px-3 py-1.5">
+                        <span class="text-xs font-black text-white/50">VS</span>
                     </div>
-                    <!-- Date du match -->
                     {% if m.scheduled_at %}
-                    <span class="text-[9px] text-white/25 mt-1">
+                    <span class="text-[9px] text-white/20 mt-1">
                         {{ m.scheduled_at|date:"d/m" }}
                     </span>
                     {% endif %}
@@ -159,69 +175,319 @@
 
                 <!-- Équipe extérieure -->
                 <div class="flex-1 flex flex-col items-end gap-1.5 min-w-0">
-                    <span class="text-sm font-bold text-white leading-tight
-                                 truncate w-full text-right
-                        {% if m.played and m.away_goals > m.home_goals %}text-green-400{% endif %}">
+                    <span class="text-sm font-bold leading-tight truncate w-full text-right
+                        {% if m.played and m.away_goals > m.home_goals %}text-green-400
+                        {% elif m.played and m.away_goals < m.home_goals %}text-white/40
+                        {% else %}text-white{% endif %}">
                         {{ m.away.name }}
                     </span>
-
                     {% if m.away.whatsapp %}
                     <a href="https://wa.me/{{ m.away.whatsapp|cut:'+' }}"
                        target="_blank" rel="noopener noreferrer"
-                       title="Contacter {{ m.away.name }} sur WhatsApp"
-                       class="inline-flex items-center gap-1.5
-                              bg-[#25D366]/15 hover:bg-[#25D366]/30
-                              border border-[#25D366]/30 hover:border-[#25D366]/60
-                              text-[#25D366] text-[10px] font-semibold
-                              px-2 py-1 rounded-lg transition-all duration-200
-                              active:scale-95 select-none">
-                        <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24"
-                             fill="currentColor">
+                       class="inline-flex items-center gap-1.5 bg-[#25D366]/12
+                              hover:bg-[#25D366]/25 border border-[#25D366]/25
+                              hover:border-[#25D366]/50 text-[#25D366] text-[10px]
+                              font-semibold px-2 py-0.5 rounded-lg
+                              transition-all active:scale-95">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                         </svg>
                         Contact
                     </a>
-                    {% else %}
-                    <span class="text-[10px] text-white/20 italic">—</span>
                     {% endif %}
                 </div>
 
             </div>
 
-            <!-- Pied de carte -->
+            <!-- Footer -->
             {% if m.is_mine or request.user.is_staff %}
             <div class="flex items-center justify-between px-4 py-2
                         bg-white/2 border-t border-white/5">
-
                 {% if m.is_mine %}
-                <span class="text-[10px] font-bold text-green-400
-                             bg-green-400/10 px-2 py-0.5 rounded-full
-                             border border-green-400/20">
+                <span class="text-[10px] font-bold text-green-400 bg-green-400/10
+                             px-2 py-0.5 rounded-full border border-green-400/15">
                     ⚽ Mon match
                 </span>
-                {% else %}
-                <span></span>
-                {% endif %}
-
+                {% else %}<span></span>{% endif %}
                 {% if request.user.is_staff %}
                 <a href="{% url 'enter_result' m.id %}"
-                   class="inline-flex items-center gap-1 text-[10px] font-bold
-                          text-amber-400 bg-amber-400/10 hover:bg-amber-400/20
-                          px-2.5 py-1 rounded-lg border border-amber-400/20
-                          transition-colors duration-150">
+                   class="text-[10px] font-bold text-amber-400 bg-amber-400/10
+                          hover:bg-amber-400/20 px-2.5 py-1 rounded-lg
+                          border border-amber-400/15 transition-colors">
                     ✏️ Modifier
                 </a>
                 {% endif %}
+            </div>
+            {% endif %}
 
+        </div>
+        {% empty %}
+        <div class="flex flex-col items-center py-14 text-white/25">
+            <span class="text-4xl mb-3">🗓️</span>
+            <p class="text-sm">Aucun match pour cette journée</p>
+        </div>
+        {% endfor %}
+
+    </div>
+    {% endfor %}
+
+    <!-- ═══════════════════════════════════════
+         BLOCS PHASES FINALES
+    ═══════════════════════════════════════ -->
+    {% for phase_code, data in knockout.items %}
+    <div id="tab-{{ phase_code }}" class="tab-block hidden space-y-3">
+
+        <!-- Badge phase -->
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-lg">{{ data.meta.icon }}</span>
+            <span class="text-xs font-black uppercase tracking-widest
+                {% if data.meta.color == 'amber' %}text-amber-400
+                {% elif data.meta.color == 'orange' %}text-orange-400
+                {% elif data.meta.color == 'sky' %}text-sky-400
+                {% elif data.meta.color == 'purple' %}text-purple-400
+                {% elif data.meta.color == 'emerald' %}text-emerald-400
+                {% endif %}">
+                {{ data.meta.label }}
+            </span>
+            <span class="text-[10px] text-white/20 ml-auto">
+                {{ data.matches|length }} match{{ data.matches|length|pluralize }}
+            </span>
+        </div>
+
+        {% for m in data.matches %}
+
+        <!-- Carte match éliminatoire -->
+        <div class="relative overflow-hidden rounded-2xl
+                    {% if m.is_mine %}ring-1 ring-green-500/40{% endif %}
+                    {% if phase_code == 'F' %}
+                        bg-gradient-to-br from-amber-500/15 to-orange-600/10
+                        border-2 border-amber-500/40
+                        shadow-lg shadow-amber-500/15
+                    {% elif phase_code == '3P' %}
+                        bg-gradient-to-br from-purple-500/12 to-purple-900/8
+                        border border-purple-500/30
+                    {% elif phase_code == 'SF' %}
+                        bg-gradient-to-br from-sky-500/10 to-sky-900/5
+                        border border-sky-500/25
+                    {% elif phase_code == 'QF' %}
+                        bg-gradient-to-br from-orange-500/10 to-orange-900/5
+                        border border-orange-500/20
+                    {% else %}
+                        bg-gradient-to-br from-[#0f172a] to-[#111827]
+                        border border-amber-400/20
+                    {% endif %}
+                    transition-all duration-200 hover:scale-[1.005]">
+
+            <!-- Header phase -->
+            <div class="flex items-center justify-between px-4 py-2
+                        bg-white/3 border-b border-white/5">
+
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black uppercase tracking-widest
+                        {% if phase_code == 'F' %}text-amber-400
+                        {% elif phase_code == '3P' %}text-purple-400
+                        {% elif phase_code == 'SF' %}text-sky-400
+                        {% elif phase_code == 'QF' %}text-orange-400
+                        {% else %}text-amber-400/70{% endif %}">
+                        {{ data.meta.icon }} {{ data.meta.label }}
+                        {% if data.matches|length > 1 %}
+                            · {{ forloop.counter }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Statut/Countdown -->
+                {% if m.played %}
+                <span class="text-[10px] font-bold text-white/25 bg-white/5
+                             px-2 py-0.5 rounded-full">✅ FT</span>
+                {% elif m.home and m.away %}
+                    {% if m.scheduled_at %}
+                    <span class="countdown-badge text-[10px] font-bold
+                                 px-2.5 py-0.5 rounded-full border
+                                 {% if m.hours_left < 2 %}
+                                     text-red-400 bg-red-400/10 border-red-400/20
+                                 {% elif m.hours_left < 6 %}
+                                     text-orange-400 bg-orange-400/10 border-orange-400/20
+                                 {% else %}
+                                     text-amber-400 bg-amber-400/10 border-amber-400/15
+                                 {% endif %}"
+                         data-deadline="{{ m.countdown_ts }}">
+                        ⏱ {{ m.countdown_label }}
+                    </span>
+                    {% else %}
+                    <span class="text-[10px] text-white/20 bg-white/5
+                                 px-2 py-0.5 rounded-full border border-white/10">
+                        À planifier
+                    </span>
+                    {% endif %}
+                {% else %}
+                <span class="text-[10px] text-white/20 bg-white/5
+                             px-2 py-0.5 rounded-full border border-white/10">
+                    En attente
+                </span>
+                {% endif %}
+
+            </div>
+
+            <!-- Corps -->
+            <div class="flex items-center justify-between px-3 py-3 gap-2">
+
+                <!-- Équipe domicile -->
+                <div class="flex-1 flex flex-col items-start gap-1.5 min-w-0">
+
+                    <span class="text-sm font-bold leading-tight truncate w-full
+                        {% if m.played and m.winner == m.home %}
+                            {% if phase_code == 'F' %}text-amber-400
+                            {% elif phase_code == '3P' %}text-purple-400
+                            {% else %}text-green-400{% endif %}
+                        {% elif m.played %}text-white/40
+                        {% else %}text-white{% endif %}">
+                        {% if m.home %}{{ m.home.name }}
+                        {% elif phase_code == '3P' %}Perdant D1
+                        {% else %}Vainqueur à venir{% endif %}
+                    </span>
+
+                    {% if m.home and m.home.whatsapp %}
+                    <a href="https://wa.me/{{ m.home.whatsapp|cut:'+' }}"
+                       target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 bg-[#25D366]/12
+                              hover:bg-[#25D366]/25 border border-[#25D366]/25
+                              hover:border-[#25D366]/50 text-[#25D366] text-[10px]
+                              font-semibold px-2 py-0.5 rounded-lg
+                              transition-all active:scale-95">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                        Contact
+                    </a>
+                    {% endif %}
+
+                </div>
+
+                <!-- Score central -->
+                <div class="flex-shrink-0 flex flex-col items-center px-2 gap-0.5">
+
+                    {% if m.played %}
+                    <!-- Score temps réglementaire -->
+                    <div class="flex items-center gap-1">
+                        <span class="text-xl font-black
+                            {% if m.winner == m.home %}
+                                {% if phase_code == 'F' %}text-amber-400
+                                {% else %}text-green-400{% endif %}
+                            {% else %}text-white/35{% endif %}">
+                            {{ m.home_goals }}
+                        </span>
+                        <span class="text-white/20 text-sm">-</span>
+                        <span class="text-xl font-black
+                            {% if m.winner == m.away %}
+                                {% if phase_code == 'F' %}text-amber-400
+                                {% else %}text-green-400{% endif %}
+                            {% else %}text-white/35{% endif %}">
+                            {{ m.away_goals }}
+                        </span>
+                    </div>
+
+                    <!-- Prolongations -->
+                    {% if m.extra_time %}
+                    <span class="text-[9px] text-sky-400/70 font-bold">
+                        +{{ m.home_goals_et }}-{{ m.away_goals_et }} ap
+                    </span>
+                    {% endif %}
+
+                    <!-- TAB -->
+                    {% if m.penalty_shootout %}
+                    <span class="text-[9px] text-orange-400/80 font-bold bg-orange-400/10
+                                 px-2 py-0.5 rounded-full border border-orange-400/20">
+                        {{ m.home_penalties }}-{{ m.away_penalties }} tab
+                    </span>
+                    {% endif %}
+
+                    <span class="text-[9px] text-white/20 uppercase tracking-widest">FT</span>
+
+                    {% else %}
+                    <div class="bg-white/6 border border-white/10 rounded-xl px-3 py-1.5">
+                        <span class="text-xs font-black text-white/50">VS</span>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Équipe extérieure -->
+                <div class="flex-1 flex flex-col items-end gap-1.5 min-w-0">
+
+                    <span class="text-sm font-bold leading-tight truncate w-full text-right
+                        {% if m.played and m.winner == m.away %}
+                            {% if phase_code == 'F' %}text-amber-400
+                            {% elif phase_code == '3P' %}text-purple-400
+                            {% else %}text-green-400{% endif %}
+                        {% elif m.played %}text-white/40
+                        {% else %}text-white{% endif %}">
+                        {% if m.away %}{{ m.away.name }}
+                        {% elif phase_code == '3P' %}Perdant D2
+                        {% else %}Vainqueur à venir{% endif %}
+                    </span>
+
+                    {% if m.away and m.away.whatsapp %}
+                    <a href="https://wa.me/{{ m.away.whatsapp|cut:'+' }}"
+                       target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 bg-[#25D366]/12
+                              hover:bg-[#25D366]/25 border border-[#25D366]/25
+                              hover:border-[#25D366]/50 text-[#25D366] text-[10px]
+                              font-semibold px-2 py-0.5 rounded-lg
+                              transition-all active:scale-95">
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                        Contact
+                    </a>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <!-- Champion badge pour finale -->
+            {% if phase_code == 'F' and m.played %}
+            <div class="px-3 pb-3">
+                <div class="bg-gradient-to-r from-amber-500 to-orange-500
+                            rounded-xl py-2.5 text-center">
+                    <div class="text-[10px] font-bold text-black/60
+                                uppercase tracking-widest">🏆 Champion</div>
+                    <div class="text-sm font-black text-black">
+                        {{ m.winner.name }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            {% if m.is_mine or request.user.is_staff %}
+            <div class="flex items-center justify-between px-4 py-2
+                        bg-white/2 border-t border-white/5">
+                {% if m.is_mine %}
+                <span class="text-[10px] font-bold text-green-400 bg-green-400/10
+                             px-2 py-0.5 rounded-full border border-green-400/15">
+                    ⚽ Mon match
+                </span>
+                {% else %}<span></span>{% endif %}
+
+                {% if request.user.is_staff %}
+                <a href="{% url 'enter_result' m.id %}"
+                   class="text-[10px] font-bold text-amber-400 bg-amber-400/10
+                          hover:bg-amber-400/20 px-2.5 py-1 rounded-lg
+                          border border-amber-400/15 transition-colors">
+                    ✏️ Encoder
+                </a>
+                {% endif %}
             </div>
             {% endif %}
 
         </div>
 
         {% empty %}
-        <div class="flex flex-col items-center justify-center py-16 text-white/30">
-            <span class="text-4xl mb-3">🗓️</span>
-            <p class="text-sm font-medium">Aucun match programmé</p>
+        <div class="flex flex-col items-center py-14 text-white/25">
+            <span class="text-4xl mb-3">{{ data.meta.icon }}</span>
+            <p class="text-sm">Matchs pas encore programmés</p>
         </div>
         {% endfor %}
 
@@ -230,111 +496,101 @@
 
 </div>
 
-<!-- ═══ SCRIPT ═══════════════════════════════════════════════ -->
+<!-- Scripts -->
 <script>
-
-// ── Changement de journée ────────────────────────────────────
-function showDay(day) {
-    document.querySelectorAll('.day-block').forEach(el => {
+// ── Navigation onglets ──────────────────────────────────────
+function showTab(id) {
+    // Cache tout
+    document.querySelectorAll('.tab-block').forEach(el => {
         el.classList.add('hidden');
-        el.style.opacity = '0';
     });
 
-    const target = document.getElementById(day);
+    // Affiche le bon avec animation
+    const target = document.getElementById('tab-' + id);
     if (target) {
         target.classList.remove('hidden');
+        target.style.opacity = '0';
+        target.style.transform = 'translateY(6px)';
         requestAnimationFrame(() => {
-            target.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            target.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
             target.style.opacity = '1';
             target.style.transform = 'translateY(0)';
         });
     }
 
-    document.querySelectorAll('.day-btn').forEach(btn => {
+    // Reset boutons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove(
-            'bg-green-500','text-white',
-            'shadow-lg','shadow-green-500/30'
+            'bg-green-500','text-white','shadow-lg','shadow-green-500/25',
+            'bg-amber-500','shadow-amber-500/25',
+            'bg-orange-500','shadow-orange-500/25',
+            'bg-sky-500','shadow-sky-500/25',
+            'bg-purple-500','shadow-purple-500/25',
+            'bg-emerald-500','shadow-emerald-500/25'
         );
-        btn.classList.add(
-            'bg-white/5','text-white/50','border','border-white/10'
-        );
+        btn.classList.add('bg-white/5','text-white/50','border','border-white/10');
     });
 
-    const activeBtn = document.getElementById('b' + day);
+    // Active le bouton
+    const activeBtn = document.getElementById('btn-' + id);
     if (activeBtn) {
-        activeBtn.classList.remove(
-            'bg-white/5','text-white/50','border','border-white/10'
-        );
-        activeBtn.classList.add(
-            'bg-green-500','text-white',
-            'shadow-lg','shadow-green-500/30'
-        );
+        activeBtn.classList.remove('bg-white/5','text-white/50','border','border-white/10');
+
+        // Couleur selon phase
+        const colors = {
+            'J1': ['bg-green-500','shadow-lg','shadow-green-500/25'],
+            'J2': ['bg-green-500','shadow-lg','shadow-green-500/25'],
+            'J3': ['bg-green-500','shadow-lg','shadow-green-500/25'],
+            'R16': ['bg-amber-500','shadow-lg','shadow-amber-500/25'],
+            'QF':  ['bg-orange-500','shadow-lg','shadow-orange-500/25'],
+            'SF':  ['bg-sky-500','shadow-lg','shadow-sky-500/25'],
+            '3P':  ['bg-purple-500','shadow-lg','shadow-purple-500/25'],
+            'F':   ['bg-emerald-500','shadow-lg','shadow-emerald-500/25'],
+        };
+
+        const cls = colors[id] || ['bg-green-500','shadow-lg'];
+        activeBtn.classList.add('text-white', ...cls);
     }
 }
 
-// ── Compte à rebours temps réel ──────────────────────────────
-function formatCountdown(totalSeconds) {
-    if (totalSeconds <= 0) return "⏰ Temps écoulé";
-
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-
-    if (h > 0) {
-        return `⏱ ${h}h ${String(m).padStart(2,'0')}min`;
-    } else if (m > 0) {
-        return `⏱ ${m}min ${String(s).padStart(2,'0')}s`;
-    } else {
-        return `⏱ ${s}s`;
-    }
+// ── Compte à rebours temps réel ─────────────────────────────
+function formatCountdown(secs) {
+    if (secs <= 0) return "⏰ Temps écoulé";
+    const d = Math.floor(secs / 86400);
+    const h = Math.floor((secs % 86400) / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (d > 0) return `⏱ ${d}j ${h}h`;
+    if (h > 0) return `⏱ ${h}h ${String(m).padStart(2,'0')}min`;
+    if (m > 0) return `⏱ ${m}min ${String(s).padStart(2,'0')}s`;
+    return `⏱ ${s}s`;
 }
 
 function updateCountdowns() {
     const now = Math.floor(Date.now() / 1000);
+    document.querySelectorAll('.countdown-badge[data-deadline]').forEach(el => {
+        const dl = parseInt(el.dataset.deadline, 10);
+        if (isNaN(dl)) return;
+        const rem = dl - now;
+        el.textContent = formatCountdown(rem);
 
-    document.querySelectorAll('.countdown-badge[data-deadline]').forEach(badge => {
-        const deadline = parseInt(badge.dataset.deadline, 10);
-        if (isNaN(deadline)) return;
-
-        const remaining = deadline - now;
-
-        badge.textContent = formatCountdown(remaining);
-
-        // Change couleur selon urgence
-        badge.classList.remove(
-            'text-red-400','bg-red-400/10','border-red-400/25',
-            'text-orange-400','bg-orange-400/10','border-orange-400/25',
-            'text-amber-400','bg-amber-400/10','border-amber-400/20'
+        el.classList.remove(
+            'text-red-400','bg-red-400/10','border-red-400/20',
+            'text-orange-400','bg-orange-400/10','border-orange-400/20',
+            'text-amber-400','bg-amber-400/10','border-amber-400/15'
         );
-
-        if (remaining <= 0) {
-            badge.textContent = "⏰ Temps écoulé";
-            badge.classList.add(
-                'text-red-400','bg-red-400/10','border-red-400/25'
-            );
-        } else if (remaining < 3600) {
-            // Moins d'1 heure → rouge
-            badge.classList.add(
-                'text-red-400','bg-red-400/10','border-red-400/25'
-            );
-        } else if (remaining < 21600) {
-            // Moins de 6h → orange
-            badge.classList.add(
-                'text-orange-400','bg-orange-400/10','border-orange-400/25'
-            );
+        if (rem < 3600) {
+            el.classList.add('text-red-400','bg-red-400/10','border-red-400/20');
+        } else if (rem < 21600) {
+            el.classList.add('text-orange-400','bg-orange-400/10','border-orange-400/20');
         } else {
-            // Normal → ambre
-            badge.classList.add(
-                'text-amber-400','bg-amber-400/10','border-amber-400/20'
-            );
+            el.classList.add('text-amber-400','bg-amber-400/10','border-amber-400/15');
         }
     });
 }
 
-// Lance immédiatement puis toutes les secondes
 updateCountdowns();
 setInterval(updateCountdowns, 1000);
-
 </script>
 
 {% endblock %}
